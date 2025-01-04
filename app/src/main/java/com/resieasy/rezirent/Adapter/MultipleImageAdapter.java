@@ -17,10 +17,10 @@ import java.util.ArrayList;
 
 public class MultipleImageAdapter extends RecyclerView.Adapter<MultipleImageAdapter.ViewHolder> {
 
-    ArrayList<Uri>uriArrylist;
+    ArrayList<Uri>uriArraylist;
 
-    public MultipleImageAdapter(ArrayList<Uri> uriArrylist) {
-        this.uriArrylist = uriArrylist;
+    public MultipleImageAdapter(ArrayList<Uri> uriArraylist) {
+        this.uriArraylist = uriArraylist;
     }
 
     @NonNull
@@ -32,13 +32,13 @@ public class MultipleImageAdapter extends RecyclerView.Adapter<MultipleImageAdap
 
     @Override
     public void onBindViewHolder(@NonNull MultipleImageAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        //holder.imageView1.setImageURI(uriArrylist.get(position));
-        Picasso.get().load(uriArrylist.get(position)).into(holder.imageView1);
+        //holder.imageView1.setImageURI(uriArraylist.get(position));
+        Picasso.get().load(uriArraylist.get(position)).into(holder.imageView1);
 
         holder.imageView12.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uriArrylist.remove(uriArrylist.get(position));
+                uriArraylist.remove(uriArraylist.get(position));
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position,getItemCount());
             }
@@ -48,7 +48,7 @@ public class MultipleImageAdapter extends RecyclerView.Adapter<MultipleImageAdap
 
     @Override
     public int getItemCount() {
-        return uriArrylist.size();
+        return uriArraylist.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

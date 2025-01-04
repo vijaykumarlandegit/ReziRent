@@ -1,9 +1,7 @@
 package com.resieasy.rezirent.Adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +10,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -23,8 +17,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.resieasy.rezirent.Activity.ShowHostelDataActivity;
-import com.resieasy.rezirent.Activity.ShowResidencyDataActivity;
-import com.resieasy.rezirent.Class.AddFlatClass;
 import com.resieasy.rezirent.Class.AddHostelClass;
 import com.resieasy.rezirent.Class.LikeClass;
 import com.resieasy.rezirent.R;
@@ -39,6 +31,13 @@ public class HostelHoriAdapter extends RecyclerView.Adapter<HostelHoriAdapter.Vi
 
     Context context;
     ArrayList<AddHostelClass> list;
+
+
+    public void updateList(ArrayList<AddHostelClass> newList){
+        this.list.clear();
+        this.list.addAll(newList);
+        notifyDataSetChanged();
+    }
 
 
     public HostelHoriAdapter(Context context, ArrayList<AddHostelClass> list) {

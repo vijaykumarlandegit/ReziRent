@@ -40,7 +40,11 @@ public class SellHoriAdapter extends RecyclerView.Adapter<SellHoriAdapter.ViewHo
     Context context;
     ArrayList<SellResiClass> list;
 
-
+    public void updateList(ArrayList<SellResiClass> newList) {
+        this.list.clear();
+        this.list.addAll(newList);
+        notifyDataSetChanged();
+    }
     public SellHoriAdapter(Context context, ArrayList<SellResiClass> list) {
         this.context = context;
         this.list = list;
@@ -164,6 +168,8 @@ public class SellHoriAdapter extends RecyclerView.Adapter<SellHoriAdapter.ViewHo
     public int getItemCount() {
         return list.size();
     }
+
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 

@@ -2,8 +2,11 @@ package com.resieasy.rezirent.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.annotation.SuppressLint;
@@ -11,6 +14,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -59,16 +63,19 @@ import com.resieasy.rezirent.Class.AddFlatClass;
 import com.resieasy.rezirent.Class.AddHostelClass;
 import com.resieasy.rezirent.Class.BothResiClass;
 import com.resieasy.rezirent.Class.SellResiClass;
+import com.resieasy.rezirent.Factory.MainActivityViewModelFactory;
 import com.resieasy.rezirent.R;
+import com.resieasy.rezirent.Repository.MainActivityRepository;
+import com.resieasy.rezirent.ViewModel.MainActivityViewModel;
 import com.resieasy.rezirent.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+ public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
-    FirebaseAuth auth;
+    FirebaseAuth  auth;
     ArrayList<Fragment> fragmentarrylist = new ArrayList<>();
     BottomNavigationView bottomNavigationView;
 
@@ -84,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     HostelHoriAdapter adapter3;
     int UPDATE_CODE = 8888;
     AppUpdateManager appUpdateManager;
+    MainActivityViewModel mainActivityViewModel;
 
     private static final String ONESIGNAL_APP_ID = "105b8d9e-51ac-45d4-bed8-c23bbe105b32";
 
@@ -96,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
             }
         });
 
@@ -149,7 +157,31 @@ public class MainActivity extends AppCompatActivity {
         binding.sellshimmer.startShimmer();
 
 
-        FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
+        FirebaseFirestore firebaseFirestore=FirebaseFirestore.getInstance();
+        MainActivityRepository repository= new MainActivityRepository(firebaseFirestore);
+        mainActivityViewModel= new ViewModelProvider(this, new MainActivityViewModelFactory(repository)).get(MainActivityViewModel.class);
+
+
+
+        mainActivityViewModel.getHostePG().observe(this, users -> {
+            if (users != null) {
+                // Stop shimmer and hide it
+                binding.hostelshimmer.setVisibility(View.GONE);
+                binding.hostelshimmer.stopShimmer();
+
+                // Log observed data
+                Log.d("MainActivity2", "Observed users: " + users);
+
+                // Update the adapter's list
+                adapter3.updateList(new ArrayList<>(users));
+            } else {
+                Log.d("MainActivity2", "No users observed.");
+            }
+        });
+
+        mainActivityViewModel.loadHostelPG();
+
+       /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
                 .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Hostel")
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -170,8 +202,18 @@ public class MainActivity extends AppCompatActivity {
 
 
                     }
-                });
-        FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
+                });*/
+
+        mainActivityViewModel.getRent().observe(this, users -> {
+            binding.rentshimmer.setVisibility(View.GONE);
+            binding.rentshimmer.stopShimmer();
+
+            Log.d("MainActivity2", "Observed users: " + users);
+            adapter2.updateList(new ArrayList<>(users));
+        });
+      mainActivityViewModel.loadRent();
+
+    /*    FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
                 .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Rent")
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -191,8 +233,20 @@ public class MainActivity extends AppCompatActivity {
                             adapter2.notifyDataSetChanged();
                         }
                     }
-                });
-        FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
+                });*/
+
+        mainActivityViewModel.getSell().observe(this, users -> {
+            binding.sellshimmer.setVisibility(View.GONE);
+            binding.sellshimmer.stopShimmer();
+
+
+            Log.d("MainActivity2", "Observed users: " + users);
+            adapter1.updateList(new ArrayList<>(users));
+        });
+        mainActivityViewModel.loadSell();
+
+
+       /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
                 .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Sell")
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -216,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-                });
+                });*/
 
         binding.allresibottom.setOnClickListener(new View.OnClickListener() {
             @Override

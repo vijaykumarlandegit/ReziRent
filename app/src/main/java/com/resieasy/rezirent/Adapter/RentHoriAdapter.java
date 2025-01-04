@@ -41,6 +41,12 @@ public class RentHoriAdapter extends RecyclerView.Adapter<RentHoriAdapter.ViewHo
     Context context;
     ArrayList<AddFlatClass> list;
 
+
+    public void updateList(ArrayList<AddFlatClass> newList){
+        this.list.clear();
+        this.list.addAll(newList);
+        notifyDataSetChanged();
+    }
     public RentHoriAdapter(Context context, ArrayList<AddFlatClass> list) {
         this.context = context;
         this.list = list;
