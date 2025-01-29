@@ -9,10 +9,14 @@ import com.resieasy.rezirent.Class.AddFlatClass
 import com.resieasy.rezirent.Class.AddHostelClass
 import com.resieasy.rezirent.Class.SellResiClass
 import com.resieasy.rezirent.Repository.MainActivityRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainActivityViewModel(private val repository: MainActivityRepository) :ViewModel(){
+
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(private val repository: MainActivityRepository) :ViewModel(){
 
    private val _hostelPG=MutableLiveData<List<AddHostelClass>>()
     val hostePG:LiveData<List<AddHostelClass>>get() = _hostelPG

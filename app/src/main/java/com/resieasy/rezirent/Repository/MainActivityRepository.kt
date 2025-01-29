@@ -6,8 +6,9 @@ import com.resieasy.rezirent.Class.AddFlatClass
 import com.resieasy.rezirent.Class.AddHostelClass
 import com.resieasy.rezirent.Class.SellResiClass
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class MainActivityRepository(private val instance: FirebaseFirestore) {
+class MainActivityRepository @Inject constructor(private val instance: FirebaseFirestore) {
 
     suspend fun fetchHostelPG():List<AddHostelClass>{
         return try{
@@ -42,7 +43,7 @@ class MainActivityRepository(private val instance: FirebaseFirestore) {
                     f2 = it.getString("f2") ?: ""
                     f3 = it.getString("f3") ?: ""
                     i1 = it.getLong("i1")?.toInt() ?: 0
-                    `in` = it.getLong("in")?.toInt() ?: 0
+                    input = it.getLong("in")?.toInt() ?: 0
                     period = it.getLong("period")?.toInt() ?: 0
                     latitude = it.getDouble("latitude") ?: 0.0
                     longitude =it.getDouble("longitude") ?: 0.0
@@ -87,7 +88,7 @@ class MainActivityRepository(private val instance: FirebaseFirestore) {
                     f2 = it.getString("f2") ?: ""
                     f3 = it.getString("f3") ?: ""
                     i1 = it.getLong("i1")?.toInt() ?: 0
-                    `in` = it.getLong("in")?.toInt() ?: 0
+                    input = it.getLong("in")?.toInt() ?: 0
                     period = it.getLong("period")?.toInt() ?: 0
                     latitude = it.getDouble("latitude") ?: 0.0
                     longitude =it.getDouble("longitude") ?: 0.0
@@ -131,7 +132,7 @@ class MainActivityRepository(private val instance: FirebaseFirestore) {
                     f2 = it.getString("f2") ?: ""
                     f3 = it.getString("f3") ?: ""
                     i1 = it.getLong("i1")?.toInt() ?: 0
-                    `in` = it.getLong("in")?.toInt() ?: 0
+                    input = it.getLong("in")?.toInt() ?: 0
                       latitude = it.getDouble("latitude") ?: 0.0
                     longitude =it.getDouble("longitude") ?: 0.0
                     time = it.getLong("time") ?: 0
