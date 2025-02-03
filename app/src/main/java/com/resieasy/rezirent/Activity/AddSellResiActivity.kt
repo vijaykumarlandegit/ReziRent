@@ -33,14 +33,14 @@ import java.util.Date
 import java.util.Locale
 
 class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
-    var binding: ActivityAddSellResiBinding? = null
+   lateinit var binding: ActivityAddSellResiBinding 
     var latitude: Double = 0.0
     var longitude: Double = 0.0
 
     lateinit var rentaltype: Array<String>
     lateinit var areatype: Array<String>
 
-    var PICK_IMG: Int = 123
+    
     var `in`: Int = 0
     var hashMap: HashMap<String, String>? = null
 
@@ -58,8 +58,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
 
     val newStrings = ArrayList<String>()
 
-    private val picker: MaterialTimePicker? = null
-    var calendar: Calendar? = null
+    
     var type: String? = null
     var subtype: String? = null
 
@@ -68,7 +67,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
         binding = ActivityAddSellResiBinding.inflate(
             layoutInflater
         )
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
 
         dialog = ProgressDialog(this)
@@ -86,7 +85,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
 
 
 
-        binding!!.justrehds.setOnClickListener { }
+        binding.justrehds.setOnClickListener { }
 
 
         val adapter = ArrayAdapter.createFromResource(
@@ -95,8 +94,8 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             android.R.layout.simple_spinner_item
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.selltype.adapter = adapter
-        binding!!.selltype.onItemSelectedListener =
+        binding.selltype.adapter = adapter
+        binding.selltype.onItemSelectedListener =
             this@AddSellResiActivity
 
         val adapter1 = ArrayAdapter.createFromResource(
@@ -105,17 +104,17 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             android.R.layout.simple_spinner_item
         )
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.areatype.adapter = adapter1
-        binding!!.areatype.onItemSelectedListener =
+        binding.areatype.adapter = adapter1
+        binding.areatype.onItemSelectedListener =
             this@AddSellResiActivity
 
 
         multipleImageAdapter = MultipleImageAdapter(newlist)
-        binding!!.multiimagerec.layoutManager =
+        binding.multiimagerec.layoutManager =
             GridLayoutManager(this@AddSellResiActivity, 3)
-        binding!!.multiimagerec.adapter = multipleImageAdapter
+        binding.multiimagerec.adapter = multipleImageAdapter
 
-        binding!!.selltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.selltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
                 view: View,
@@ -124,14 +123,14 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             ) {
                 val item = parent.getItemAtPosition(position)
                 if (item.toString() == "Flat") {
-                    binding!!.flatview1.visibility = View.VISIBLE
-                    binding!!.roomview1.visibility = View.GONE
+                    binding.flatview1.visibility = View.VISIBLE
+                    binding.roomview1.visibility = View.GONE
                 } else if (item.toString() == "Room") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.VISIBLE
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.VISIBLE
                 } else {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
                 }
             }
 
@@ -139,34 +138,34 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             }
         }
 
-        binding!!.opengallerybtn2.setOnClickListener {
+        binding.opengallerybtn2.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.setType("image/*")
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             startActivityForResult(intent, PICK_IMAGE)
-            binding!!.currentimageview.visibility = View.VISIBLE
+            binding.currentimageview.visibility = View.VISIBLE
         }
-        binding!!.capturelocation2.setOnClickListener {
+        binding.capturelocation2.setOnClickListener {
             checkpermission()
             dialog1!!.show()
         }
-        binding!!.back.setOnClickListener { finish() }
-        binding!!.mapview.setOnClickListener {
+        binding.back.setOnClickListener { finish() }
+        binding.mapview.setOnClickListener {
             val intent = Intent(this@AddSellResiActivity, MapsActivity::class.java)
             intent.putExtra("latitude", latitude)
             intent.putExtra("longitude", longitude)
             intent.putExtra("name", "Your residency name will fetch here")
             startActivity(intent)
         }
-        binding!!.submitresibtn.setOnClickListener {
+        binding.submitresibtn.setOnClickListener {
             dialog!!.show()
-            val type = binding!!.selltype.selectedItem.toString()
+            val type = binding.selltype.selectedItem.toString()
 
 
 
             if (type == "Flat") {
-                binding!!.flatview1.visibility = View.VISIBLE
-                val ID01 = binding!!.flatview1.checkedRadioButtonId
+                binding.flatview1.visibility = View.VISIBLE
+                val ID01 = binding.flatview1.checkedRadioButtonId
                 val radioButton01 = findViewById<RadioButton>(ID01)
 
                 if (radioButton01.text == "1RK") {
@@ -188,8 +187,8 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                     subtype = "5BHK"
                 }
             } else if (type == "Room") {
-                binding!!.roomview1.visibility = View.VISIBLE
-                val ID02 = binding!!.roomview1.checkedRadioButtonId
+                binding.roomview1.visibility = View.VISIBLE
+                val ID02 = binding.roomview1.checkedRadioButtonId
                 val radioButton02 = findViewById<RadioButton>(ID02)
 
                 if (radioButton02.text == "Single Room") {
@@ -212,13 +211,12 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             }
 
 
-            val nametext = binding!!.resiname.text.toString()
-            val addresstext = binding!!.resiaddress.text.toString()
-            //String locationtext = binding.showlocationtext.getText().toString();
-            val onametext = binding!!.oname.text.toString()
-            val contacttext = binding!!.contact.text.toString()
-            val whatsapptext = binding!!.whatsapp.text.toString()
-            if (!nametext.isEmpty() && !addresstext.isEmpty() && !onametext.isEmpty() && !contacttext.isEmpty() && !whatsapptext.isEmpty()) {
+            val nametext = binding.resiname.text.toString()
+            val addresstext = binding.resiaddress.text.toString()
+             val onametext = binding.oname.text.toString()
+            val contacttext = binding.contact.text.toString()
+            val whatsapptext = binding.whatsapp.text.toString()
+            if (nametext.isNotEmpty() && addresstext.isNotEmpty() && onametext.isNotEmpty() && contacttext.isNotEmpty() && whatsapptext.isNotEmpty()) {
                 if (newlist.isEmpty()) {
                     dialog!!.dismiss()
                     Toast.makeText(
@@ -226,10 +224,10 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                         "Please select images",
                         Toast.LENGTH_SHORT
                     ).show()
-                } else if (!newlist.isEmpty()) {
+                } else if (newlist.isNotEmpty()) {
                     if (newlist.size < 11) {
                         mainum = newlist.size
-                        binding!!.numbertext.text =
+                        binding.numbertext.text =
                             "If Loading Takes to long press button again"
                         val ImageFolder = FirebaseStorage.getInstance().reference.child("Nanded")
                             .child(FirebaseAuth.getInstance().uid!!)
@@ -281,7 +279,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 if (nametext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.resiname.error = "Please enter residency name"
+                    binding.resiname.error = "Please enter residency name"
                     Toast.makeText(
                         this@AddSellResiActivity,
                         "Please enter residency name",
@@ -291,7 +289,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 if (addresstext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.resiaddress.error = "Please enter residency address"
+                    binding.resiaddress.error = "Please enter residency address"
                     Toast.makeText(
                         this@AddSellResiActivity,
                         "Please enter residency address",
@@ -302,7 +300,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 if (onametext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.oname.error = "Please enter residency operator name"
+                    binding.oname.error = "Please enter residency operator name"
                     Toast.makeText(
                         this@AddSellResiActivity,
                         "Please enter residency operator name",
@@ -312,7 +310,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 if (contacttext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.contact.error = "Please enter contact number"
+                    binding.contact.error = "Please enter contact number"
                     Toast.makeText(
                         this@AddSellResiActivity,
                         "Please enter contact number",
@@ -322,7 +320,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 if (whatsapptext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.whatsapp.error = "Please enter whatsapp number"
+                    binding.whatsapp.error = "Please enter whatsapp number"
                     Toast.makeText(
                         this@AddSellResiActivity,
                         "Please enter whatsapp number",
@@ -349,17 +347,17 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             i++
         }
 
-        val name = binding!!.resiname.text.toString()
-        val address = binding!!.resiaddress.text.toString()
-        val area = binding!!.areatype.selectedItem.toString()
-        val oname = binding!!.oname.text.toString()
-        val contact = binding!!.contact.text.toString()
-        val whatsapp = binding!!.whatsapp.text.toString()
-        val mail = binding!!.email.text.toString()
-        val rent = binding!!.rentamount.text.toString()
-        val erent = binding!!.explainrent.text.toString()
-        val more = binding!!.moredetails.text.toString()
-        val size = binding!!.propertysize.text.toString()
+        val name = binding.resiname.text.toString()
+        val address = binding.resiaddress.text.toString()
+        val area = binding.areatype.selectedItem.toString()
+        val oname = binding.oname.text.toString()
+        val contact = binding.contact.text.toString()
+        val whatsapp = binding.whatsapp.text.toString()
+        val mail = binding.email.text.toString()
+        val rent = binding.rentamount.text.toString()
+        val erent = binding.explainrent.text.toString()
+        val more = binding.moredetails.text.toString()
+        val size = binding.propertysize.text.toString()
         val userid1 = FirebaseAuth.getInstance().uid
 
 
@@ -444,7 +442,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
             ).show()
         }
 
-        binding!!.numbertext.text = "Uploaded Successfully"
+        binding.numbertext.text = "Uploaded Successfully"
 
         newlist.clear()
     }
@@ -493,7 +491,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                 fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener { location ->
                 if (location != null) {
-                    binding!!.locationview.visibility = View.VISIBLE
+                    binding.locationview.visibility = View.VISIBLE
                     dialog1!!.dismiss()
                     Toast.makeText(
                         this@AddSellResiActivity,
@@ -502,7 +500,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                     ).show()
                     latitude = location.latitude
                     longitude = location.longitude
-                    binding!!.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
+                    binding.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
 
 
                     //LatLng usercl = new LatLng(latitude, longitude);
@@ -544,7 +542,7 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
                             newlist.add(newuri)
                         }
                         multipleImageAdapter!!.notifyDataSetChanged()
-                        binding!!.numbertext.text = "You have select " + newlist.size + " images"
+                        binding.numbertext.text = "You have select " + newlist.size + " images"
                     }
                 }
             }
@@ -563,6 +561,8 @@ class AddSellResiActivity : AppCompatActivity(), AdapterView.OnItemSelectedListe
     companion object {
         //new
         private const val PICK_IMAGE = 1
+    }   private fun toast(s: String) {
+        Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
     }
 }
 

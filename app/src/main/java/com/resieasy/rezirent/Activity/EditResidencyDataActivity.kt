@@ -13,8 +13,10 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -25,6 +27,9 @@ import com.resieasy.rezirent.Adapter.MultioldImageAdapter
 import com.resieasy.rezirent.Adapter.MultipleImageAdapter
 import com.resieasy.rezirent.Class.AddFlatClass
 import com.resieasy.rezirent.R
+import com.resieasy.rezirent.ViewModel.FacilityViewModel
+import com.resieasy.rezirent.ViewModel.RulesViewModel
+import com.resieasy.rezirent.ViewModel.ShowResiViewModel
 import com.resieasy.rezirent.databinding.ActivityEditResidencyDataBinding
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -33,54 +38,49 @@ import java.util.Date
 import java.util.Locale
 
 class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
-    var binding: ActivityEditResidencyDataBinding? = null
-    var PICK_IMAGE: Int = 123
+   lateinit var binding: ActivityEditResidencyDataBinding 
+    var PICK_IMAGE = 123
     var policy: String? = null
-    var period: Int = 0
-    var upload_count: Int = 0
-    var inumber: Int = 0
+    var period = 0
+    var upload_count = 0
+    var inumber = 0
     lateinit var rentaltype: Array<String>
     lateinit var areatype: Array<String>
 
-    //String[] rentaltype1={" ","Flat","Room","Hostel/PG","Shutter","House","Building"};
     private var dialog: ProgressDialog? = null
     private var dialog1: ProgressDialog? = null
 
-    // ArrayList ImageList = new ArrayList();
-    var oldlist: ArrayList<Uri?> = ArrayList()
-    var newlist: ArrayList<Uri?> = ArrayList()
+    var oldlist = ArrayList<Uri?>()
+    var newlist = ArrayList<Uri?>()
     var newuri: Uri? = null
     var olduri: Uri? = null
     val newStrings = ArrayList<String>()
+    var oldStrings = ArrayList<String>()
+    var latitude = 0.0
+    var longitude = 0.0
+    var oldlatitude :Double? = null
+    var oldlongitude :Double? = null
+    var lat = 0.0
+    var lan = 0.0
 
-    var oldStrings= ArrayList<String>()
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-    var oldlatitude: Double = 0.0
-    var oldlongitude: Double = 0.0
-
-    var lat: Double = 0.0
-    var lan: Double = 0.0
-
-    private val picker: MaterialTimePicker? = null
-    var calendar: Calendar? = null
     var multipleImageAdapter: MultipleImageAdapter? = null
     var multioldImageAdapter: MultioldImageAdapter? = null
 
-    // String id;
     var item: Any? = null
     var item2: Any? = null
     var name: String? = null
     var status: String? = null
-    var mainum: Int = 0
-
+    var mainum = 0
+    private val showResiViewModel: ShowResiViewModel by viewModels()
+    private val facilityViewModel: FacilityViewModel by viewModels()
+    private val rulesViewModel: RulesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditResidencyDataBinding.inflate(
             layoutInflater
         )
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
         val id = intent.getStringExtra("id")
 
@@ -99,8 +99,8 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             android.R.layout.simple_spinner_item
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.rentaltype.adapter = adapter
-        binding!!.rentaltype.onItemSelectedListener =
+        binding.rentaltype.adapter = adapter
+        binding.rentaltype.onItemSelectedListener =
             this@EditResidencyDataActivity
 
         val adapter1 = ArrayAdapter.createFromResource(
@@ -109,166 +109,162 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             android.R.layout.simple_spinner_item
         )
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.areatype.adapter = adapter1
-        binding!!.areatype.onItemSelectedListener =
+        binding.areatype.adapter = adapter1
+        binding.areatype.onItemSelectedListener =
             this@EditResidencyDataActivity
 
         multipleImageAdapter = MultipleImageAdapter(newlist)
-        binding!!.multiimagerec.layoutManager =
+        binding.multiimagerec.layoutManager =
             GridLayoutManager(this@EditResidencyDataActivity, 3)
-        binding!!.multiimagerec.adapter = multipleImageAdapter
+        binding.multiimagerec.adapter = multipleImageAdapter
 
         multioldImageAdapter = MultioldImageAdapter(oldlist)
-        binding!!.multiimagerec2.layoutManager =
+        binding.multiimagerec2.layoutManager =
             GridLayoutManager(this@EditResidencyDataActivity, 3)
-        binding!!.multiimagerec2.adapter = multioldImageAdapter
+        binding.multiimagerec2.adapter = multioldImageAdapter
+
+        if (id != null) {
+            showResiViewModel.getResiData(id)
+        }else{
+            toast("Something is wrong")
+        }
+        lifecycleScope.launchWhenStarted {
+            showResiViewModel.data.collect {
+                it?.let { documentSnapshot ->
+                    inumber = documentSnapshot.input
+                    oldlatitude = documentSnapshot.latitude
+                    oldlongitude = documentSnapshot.longitude
+                    val period = documentSnapshot.period
+                    val idd = documentSnapshot.id
+                    val type = documentSnapshot.type
+                    val subtype = documentSnapshot.subtype
+                    val area = documentSnapshot.area
+                    name = documentSnapshot.name
+                    status = documentSnapshot.status
+                    val address = documentSnapshot.address
+                    val oname = documentSnapshot.oname
+                    val number = documentSnapshot.number
+                    val whatsapp = documentSnapshot.whatsapp
+                    val mail = documentSnapshot.mail
+                    val rent = documentSnapshot.rent
+                    val erent = documentSnapshot.erent
+                    val deposit = documentSnapshot.deposit
+                    val extra = documentSnapshot.extra
+                    val more = documentSnapshot.more
+                    val policy = documentSnapshot.policy
 
 
-        FirebaseFirestore.getInstance().collection("Nanded")
-            .document("NandedCity").collection("AllData").document(id!!).get()
-            .addOnSuccessListener { documentSnapshot ->
-                inumber = documentSnapshot.getLong("in")!!.toInt()
-                oldlatitude = documentSnapshot.getDouble("latitude")!!
-                oldlongitude = documentSnapshot.getDouble("longitude")!!
-                val period = documentSnapshot.getLong("period")!!.toInt()
-                val period1 = java.lang.String.valueOf(
-                    documentSnapshot.getLong("period")!!.toInt()
-                )
+                    binding.olshowlocationtext.text = "Latitude $oldlatitude And $oldlongitude"
 
+                    binding.viewresitypetext.text = type
+                    binding.viewresisubtypetext.text = subtype
+                    binding.vieareatext.text = area
+                    binding.resiaddress.setText(address)
+                    binding.resiname.setText(name)
+                    binding.oname.setText(oname)
+                    binding.contact.setText(number)
+                    binding.whatsapp.setText(whatsapp)
+                    binding.email.setText(mail)
+                    binding.rentamount.setText(rent)
+                    binding.explainrent.setText(erent)
+                    binding.moredetails.setText(more)
 
-                val idd = documentSnapshot.getString("id")
-                val gettype = documentSnapshot.getString("type")
-                val getsubtype = documentSnapshot.getString("subtype")
-                val area = documentSnapshot.getString("area")
-                name = documentSnapshot.getString("name")
-                status = documentSnapshot.getString("status")
-                val address = documentSnapshot.getString("address")
-                val oname = documentSnapshot.getString("oname")
-                val number = documentSnapshot.getString("number")
-                val whatsapp = documentSnapshot.getString("whatsapp")
-                val mail = documentSnapshot.getString("mail")
-                val rent = documentSnapshot.getString("rent")
-                val erent = documentSnapshot.getString("erent")
-                val deposit = documentSnapshot.getString("deposit")
-                val extra = documentSnapshot.getString("extra")
-                val more = documentSnapshot.getString("more")
-                val oppolicy = documentSnapshot.getString("policy")
+                    FirebaseFirestore.getInstance().collection("Nanded")
+                        .document("NandedCity").collection("AllImage").document(idd!!).get()
+                        .addOnSuccessListener { snapshot ->
+                            for (i in 0 until inumber) {
+                                val immm = snapshot.getString("image$i")
 
-
-                binding!!.olshowlocationtext.text = "Latitude $oldlatitude And $oldlongitude"
-
-                binding!!.viewresitypetext.text = gettype
-                binding!!.viewresisubtypetext.text = getsubtype
-                binding!!.vieareatext.text = area
-                binding!!.resiaddress.setText(address)
-                binding!!.resiname.setText(name)
-                binding!!.oname.setText(oname)
-                binding!!.contact.setText(number)
-                binding!!.whatsapp.setText(whatsapp)
-                binding!!.email.setText(mail)
-                binding!!.rentamount.setText(rent)
-                binding!!.explainrent.setText(erent)
-                binding!!.moredetails.setText(more)
-
-                FirebaseFirestore.getInstance().collection("Nanded")
-                    .document("NandedCity").collection("AllImage").document(idd!!).get()
-                    .addOnSuccessListener { snapshot ->
-                        for (i in 0 until inumber) {
-                            val immm = snapshot.getString("image$i")
-
-                            olduri = Uri.parse(snapshot.getString("image$i"))
-                            oldlist.add(olduri)
-                            if (immm != null) {
-                                oldStrings.add(immm)
+                                olduri = Uri.parse(snapshot.getString("image$i"))
+                                oldlist.add(olduri)
+                                if (immm != null) {
+                                    oldStrings.add(immm)
+                                }
                             }
+                            multioldImageAdapter!!.notifyDataSetChanged()
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(
+                                this@EditResidencyDataActivity,
+                                e.message,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        multioldImageAdapter!!.notifyDataSetChanged()
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(
-                            this@EditResidencyDataActivity,
-                            e.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+
+
+                    if (type == "Flat") {
+                        binding.flatview1.visibility = View.VISIBLE
+                        binding.roomview1.visibility = View.GONE
+                        if (subtype == "1RK") {
+                            binding.rk1.isChecked = true
+                        }
+                        if (subtype == "1BHK") {
+                            binding.bhk1.isChecked = true
+                        }
+                        if (subtype == "2BHK") {
+                            binding.bhk2.isChecked = true
+                        }
+                        if (subtype == "3BHK") {
+                            binding.bhk3.isChecked = true
+                        }
+                    } else if (type == "Room") {
+                        binding.flatview1.visibility = View.GONE
+                        binding.roomview1.visibility = View.VISIBLE
+                        if (subtype == "Single Room") {
+                            binding.singleroom1.isChecked = true
+                        }
+                        if (subtype == "Double Room") {
+                            binding.doubleroom1.isChecked = true
+                        }
+                        if (subtype == "Triple Room") {
+                            binding.tripleroom1.isChecked = true
+                        }
                     }
 
 
-                if (gettype == "Flat") {
-                    binding!!.flatview1.visibility = View.VISIBLE
-                    binding!!.roomview1.visibility = View.GONE
-                    if (getsubtype == "1RK") {
-                        binding!!.rk1.isChecked = true
+                    if (deposit == "No deposit will taken") {
+                        binding.nodepositblue.visibility = View.VISIBLE
+                        binding.deposit.visibility = View.GONE
+                        binding.nodeposit.isChecked = true
+                        binding.yesdeposit.isChecked = false
+                    } else {
+                        binding.nodepositblue.visibility = View.GONE
+                        binding.deposit.visibility = View.VISIBLE
+                        binding.deposit.setText(deposit)
+                        binding.nodeposit.isChecked = false
+                        binding.yesdeposit.isChecked = true
                     }
-                    if (getsubtype == "1BHK") {
-                        binding!!.bhk1.isChecked = true
+                    if (extra == "No extra charges will taken") {
+                        binding.noextrablue.visibility = View.VISIBLE
+                        binding.extracharges.visibility = View.GONE
+                        binding.yescharge.isChecked = false
+                        binding.nocharge.isChecked = true
+                    } else {
+                        binding.noextrablue.visibility = View.GONE
+                        binding.extracharges.visibility = View.VISIBLE
+                        binding.extracharges.setText(extra)
+                        binding.nocharge.isChecked = false
+                        binding.yescharge.isChecked = true
                     }
-                    if (getsubtype == "2BHK") {
-                        binding!!.bhk2.isChecked = true
-                    }
-                    if (getsubtype == "3BHK") {
-                        binding!!.bhk3.isChecked = true
-                    }
-                } else if (gettype == "Room") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.VISIBLE
-                    if (getsubtype == "Single Room") {
-                        binding!!.singleroom1.isChecked = true
-                    }
-                    if (getsubtype == "Double Room") {
-                        binding!!.doubleroom1.isChecked = true
-                    }
-                    if (getsubtype == "Triple Room") {
-                        binding!!.tripleroom1.isChecked = true
+                    if (period == 708) {
+                        binding.noagreetext.visibility = View.VISIBLE
+                        binding.yesagreeview.visibility = View.GONE
+                        binding.noagreetext.setText(policy)
+                        binding.yesargee.isChecked = false
+                        binding.noagree.isChecked = true
+                    } else {
+                        binding.noagreetext.visibility = View.GONE
+                        binding.yesagreeview.visibility = View.VISIBLE
+                        binding.periodtime.setText(period)
+                        binding.yesagreetext.setText(policy)
+                        binding.noagree.isChecked = false
+                        binding.yesargee.isChecked = true
                     }
                 }
-
-
-                if (deposit == "No deposit will taken") {
-                    binding!!.nodepositblue.visibility = View.VISIBLE
-                    binding!!.deposit.visibility = View.GONE
-                    binding!!.nodeposit.isChecked = true
-                    binding!!.yesdeposit.isChecked = false
-                } else {
-                    binding!!.nodepositblue.visibility = View.GONE
-                    binding!!.deposit.visibility = View.VISIBLE
-                    binding!!.deposit.setText(deposit)
-                    binding!!.nodeposit.isChecked = false
-                    binding!!.yesdeposit.isChecked = true
-                }
-                if (extra == "No extra charges will taken") {
-                    binding!!.noextrablue.visibility = View.VISIBLE
-                    binding!!.extracharges.visibility = View.GONE
-                    binding!!.yescharge.isChecked = false
-                    binding!!.nocharge.isChecked = true
-                } else {
-                    binding!!.noextrablue.visibility = View.GONE
-                    binding!!.extracharges.visibility = View.VISIBLE
-                    binding!!.extracharges.setText(extra)
-                    binding!!.nocharge.isChecked = false
-                    binding!!.yescharge.isChecked = true
-                }
-                if (period == 708) {
-                    binding!!.noagreetext.visibility = View.VISIBLE
-                    binding!!.yesagreeview.visibility = View.GONE
-                    binding!!.noagreetext.setText(oppolicy)
-                    binding!!.yesargee.isChecked = false
-                    binding!!.noagree.isChecked = true
-                } else {
-                    binding!!.noagreetext.visibility = View.GONE
-                    binding!!.yesagreeview.visibility = View.VISIBLE
-                    binding!!.periodtime.setText(period1)
-                    binding!!.yesagreetext.setText(oppolicy)
-                    binding!!.noagree.isChecked = false
-                    binding!!.yesargee.isChecked = true
-                }
-            }.addOnFailureListener { e ->
-                Toast.makeText(
-                    this@EditResidencyDataActivity,
-                    e.message,
-                    Toast.LENGTH_SHORT
-                ).show()
             }
+        }
 
-        binding!!.rentaltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+        binding.rentaltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
                 view: View,
@@ -278,79 +274,79 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                 item = parent.getItemAtPosition(position)
 
                 if (item.toString() == "Flat") {
-                    binding!!.flatview1.visibility = View.VISIBLE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
+                    binding.flatview1.visibility = View.VISIBLE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
 
-                    val ID01 = binding!!.flatview1.checkedRadioButtonId
+                    val ID01 = binding.flatview1.checkedRadioButtonId
                     val radioButton01 = findViewById<RadioButton>(ID01)
-                    binding!!.viewresitypetext.text = "Flat"
+                    binding.viewresitypetext.text = "Flat"
 
                     if (radioButton01.text == "1RK") {
-                        binding!!.viewresisubtypetext.text = "1RK"
+                        binding.viewresisubtypetext.text = "1RK"
                     }
                     if (radioButton01.text == "1BHK") {
-                        binding!!.viewresisubtypetext.text = "1BHK"
+                        binding.viewresisubtypetext.text = "1BHK"
                     }
                     if (radioButton01.text == "2BHK") {
-                        binding!!.viewresisubtypetext.text = "2BHK"
+                        binding.viewresisubtypetext.text = "2BHK"
                     }
                     if (radioButton01.text == "3BHK") {
-                        binding!!.viewresisubtypetext.text = "3BHK"
+                        binding.viewresisubtypetext.text = "3BHK"
                     }
                     if (radioButton01.text == "4BHK") {
-                        binding!!.viewresisubtypetext.text = "4BHK"
+                        binding.viewresisubtypetext.text = "4BHK"
                     }
                     if (radioButton01.text == "5BHK") {
-                        binding!!.viewresisubtypetext.text = "5BHK"
+                        binding.viewresisubtypetext.text = "5BHK"
                     }
                 } else if (item.toString() == "Room") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.VISIBLE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    val ID02 = binding!!.roomview1.checkedRadioButtonId
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.VISIBLE
+                    binding.viewresitypetext.visibility = View.GONE
+                    val ID02 = binding.roomview1.checkedRadioButtonId
                     val radioButton02 = findViewById<RadioButton>(ID02)
-                    binding!!.viewresitypetext.text = "Room"
+                    binding.viewresitypetext.text = "Room"
 
                     if (radioButton02.text == "Single Room") {
-                        binding!!.viewresisubtypetext.text = "Single Room"
+                        binding.viewresisubtypetext.text = "Single Room"
                     }
                     if (radioButton02.text == "Double Room") {
-                        binding!!.viewresisubtypetext.text = "Double Room"
+                        binding.viewresisubtypetext.text = "Double Room"
                     }
                     if (radioButton02.text == "Triple Room") {
-                        binding!!.viewresisubtypetext.text = "Triple Room"
+                        binding.viewresisubtypetext.text = "Triple Room"
                     }
                 } else if (item.toString() == "Stutter") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Shutter"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Shutter"
 
-                    binding!!.viewresisubtypetext.text = "Shutter"
+                    binding.viewresisubtypetext.text = "Shutter"
                 } else if (item.toString() == "House") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "House"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "House"
 
-                    binding!!.viewresisubtypetext.text = "House"
+                    binding.viewresisubtypetext.text = "House"
                 } else if (item.toString() == "Building") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Building"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Building"
 
-                    binding!!.viewresisubtypetext.text = "Building"
+                    binding.viewresisubtypetext.text = "Building"
                 } else if (item.toString() == "") {
-                    binding!!.viewresitypetext.visibility = View.VISIBLE
+                    binding.viewresitypetext.visibility = View.VISIBLE
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
-        binding!!.areatype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.areatype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
                 view: View,
@@ -359,376 +355,398 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             ) {
                 item2 = parent.getItemAtPosition(position)
                 if (item2.toString() == "Anand Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Anand Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Anand Nagar"
                 } else if (item2.toString() == "Asarjan") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Asarjan"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Asarjan"
                 } else if (item2.toString() == "Ashok Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ashok Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ashok Nagar"
                 } else if (item2.toString() == "Baba Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Baba Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Baba Nagar"
                 } else if (item2.toString() == "Bafna") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Bafna"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Bafna"
                 } else if (item2.toString() == "Balirampur") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Balirampur"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Balirampur"
                 } else if (item2.toString() == "Bhagya Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Bhagya Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Bhagya Nagar"
                 } else if (item2.toString() == "Chaitanya Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Chaitanya Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Chaitanya Nagar"
                 } else if (item2.toString() == "Chaufula") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Chaufula"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Chaufula"
                 } else if (item2.toString() == "CIDCO") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "CIDCO"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "CIDCO"
                 } else if (item2.toString() == "Dhanegaon") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Dhanegaon"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Dhanegaon"
                 } else if (item2.toString() == "Farande Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Farande Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Farande Nagar"
                 } else if (item2.toString() == "Ganesh Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ganesh Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ganesh Nagar"
                 } else if (item2.toString() == "Gopalchiwadi") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Gopalchiwadi"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Gopalchiwadi"
                 } else if (item2.toString() == "Hanuman Gad") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hanuman Gad"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hanuman Gad"
                 } else if (item2.toString() == "Harsh Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Harsh Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Harsh Nagar"
                 } else if (item2.toString() == "Hingoli Gate") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hingoli Gate"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hingoli Gate"
                 } else if (item2.toString() == "HUDCO") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "HUDCO"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "HUDCO"
                 } else if (item2.toString() == "Hyder Bagh") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hyder Bagh"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hyder Bagh"
                 } else if (item2.toString() == "Itwara") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Itwara"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Itwara"
                 } else if (item2.toString() == "Kabra Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kabra Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kabra Nagar"
                 } else if (item2.toString() == "Kala Mandir") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kala Mandir"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kala Mandir"
                 } else if (item2.toString() == "Kamtha Village") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kamtha Village"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kamtha Village"
                 } else if (item2.toString() == "Kautha") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kautha"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kautha"
                 } else if (item2.toString() == "Kautha(New)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kautha(New)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kautha(New)"
                 } else if (item2.toString() == "Khadkpura") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Khadkpura"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Khadkpura"
                 } else if (item2.toString() == "Labour Colony") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Labour Colony"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Labour Colony"
                 } else if (item2.toString() == "Lokmitra Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Lokmitra Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Lokmitra Nagar"
                 } else if (item2.toString() == "MIDC") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "MIDC"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "MIDC"
                 } else if (item2.toString() == "Mondha(New)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mondha(New)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mondha(New)"
                 } else if (item2.toString() == "Mondha(Old)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mondha(Old)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mondha(Old)"
                 } else if (item2.toString() == "Mujampeth") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mujampeth"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mujampeth"
                 } else if (item2.toString() == "Peer Burhan Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Peer Burhan Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Peer Burhan Nagar"
                 } else if (item2.toString() == "Ravi Nagar(Kautha)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ravi Nagar(Kautha)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ravi Nagar(Kautha)"
                 } else if (item2.toString() == "Sarafa") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Sarafa"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Sarafa"
                 } else if (item2.toString() == "Shahu Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shahu Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shahu Nagar"
                 } else if (item2.toString() == "Shivaji Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shivaji Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shivaji Nagar"
                 } else if (item2.toString() == "Shrawasti Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shrawasti Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shrawasti Nagar"
                 } else if (item2.toString() == "Shri Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shri Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shri Nagar"
                 } else if (item2.toString() == "Shyam Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shyam Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shyam Nagar"
                 } else if (item2.toString() == "Taroda bk") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Taroda bk"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Taroda bk"
                 } else if (item2.toString() == "Taroda kh") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Taroda kh"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Taroda kh"
                 } else if (item2.toString() == "Vadibudruk") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vadibudruk"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vadibudruk"
                 } else if (item2.toString() == "Vajirabad") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vajirabad"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vajirabad"
                 } else if (item2.toString() == "Vasarani") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vasarani"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vasarani"
                 } else if (item2.toString() == "Vishnupuri") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vishnupuri"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vishnupuri"
                 } else if (item2.toString() == "Wajegaon") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Wajegaon"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Wajegaon"
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
-        FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-            .collection("AllFacility").document(id).get().addOnSuccessListener { documentSnapshot ->
-                val clean = documentSnapshot.getString("clean")
-                val ac = documentSnapshot.getString("ac")
-                val rowater = documentSnapshot.getString("rowater")
-                val water = documentSnapshot.getString("water")
-                val wifi = documentSnapshot.getString("wifi")
-                val cctv = documentSnapshot.getString("cctv")
-                val bed = documentSnapshot.getString("bed")
-                val hotwater = documentSnapshot.getString("hotwater")
-                val table = documentSnapshot.getString("table")
-                val locker = documentSnapshot.getString("locker")
-                val fan = documentSnapshot.getString("fan")
-                val powerbackup = documentSnapshot.getString("powerbackup")
-                val washing = documentSnapshot.getString("washing")
-                val security = documentSnapshot.getString("security")
-                val inout = documentSnapshot.getString("inout")
-                val attach = documentSnapshot.getString("attach")
-                val shower = documentSnapshot.getString("shower")
-                val parking = documentSnapshot.getString("parking")
-                val mess = documentSnapshot.getString("mess")
-                val tv = documentSnapshot.getString("tv")
-                val gas = documentSnapshot.getString("gas")
-                val dining = documentSnapshot.getString("dining")
-                val refrigerator = documentSnapshot.getString("refrigerator")
-                val sofa = documentSnapshot.getString("sofa")
-                val elevator = documentSnapshot.getString("elevator")
-                val play = documentSnapshot.getString("play")
-                val gym = documentSnapshot.getString("gym")
-                val studyroom = documentSnapshot.getString("studyroom")
-                val kitchen = documentSnapshot.getString("kitchen")
-                val balcony = documentSnapshot.getString("balcony")
-                val indian = documentSnapshot.getString("indian")
-                val western = documentSnapshot.getString("western")
-                val terrace = documentSnapshot.getString("terrace")
-                val furnished = documentSnapshot.getString("furnished")
-                val morefaci = documentSnapshot.getString("more")
-                if (clean == "Yes") {
-                    binding!!.checkCleanontime.isChecked = true
+
+        if (id==null){
+            toast("Something is wrong")
+        }else{
+            facilityViewModel.getFacility(id)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            facilityViewModel.data.collect {
+                it?.let { documentSnapshot ->
+                    val clean = documentSnapshot.clean
+                    val ac = documentSnapshot.ac
+                    val rowater = documentSnapshot.rowater
+                    val water = documentSnapshot.water
+                    val wifi = documentSnapshot.wifi
+                    val cctv = documentSnapshot.cctv
+                    val bed = documentSnapshot.bed
+                    val hotwater = documentSnapshot.hotwater
+                    val table = documentSnapshot.table
+                    val locker = documentSnapshot.locker
+                    val fan = documentSnapshot.fan
+                    val powerbackup = documentSnapshot.powerbackup
+                    val washing = documentSnapshot.washing
+                    val security = documentSnapshot.security
+                    val inout = documentSnapshot.inout
+                    val attach = documentSnapshot.attach
+                    val shower = documentSnapshot.shower
+                    val parking = documentSnapshot.parking
+                    val mess = documentSnapshot.mess
+                    val tv = documentSnapshot.tv
+                    val gas = documentSnapshot.gas
+                    val dining = documentSnapshot.dining
+                    val refrigerator = documentSnapshot.refrigerator
+                    val sofa = documentSnapshot.sofa
+                    val elevator = documentSnapshot.elevator
+                    val play = documentSnapshot.play
+                    val gym = documentSnapshot.gym
+                    val studyroom = documentSnapshot.studyroom
+                    val kitchen = documentSnapshot.kitchen
+                    val balcony = documentSnapshot.balcony
+                    val indian = documentSnapshot.indian
+                    val western = documentSnapshot.western
+                    val terrace = documentSnapshot.terrace
+                    val furnished = documentSnapshot.furnished
+                    val more = documentSnapshot.more
+                    if (clean == "Yes") {
+                        binding.checkCleanontime.isChecked = true
+                    }
+                    if (ac == "Yes") {
+                        binding.checkac.isChecked = true
+                    }
+                    if (rowater == "Yes") {
+                        binding.checkrowateer.isChecked = true
+                    }
+                    if (water == "Yes") {
+                        binding.checkwateerr.isChecked = true
+                    }
+                    if (wifi == "Yes") {
+                        binding.checkwifi.isChecked = true
+                    }
+                    if (cctv == "Yes") {
+                        binding.checkcamera.isChecked = true
+                    }
+                    if (bed == "Yes") {
+                        binding.checkbed.isChecked = true
+                    }
+                    if (hotwater == "Yes") {
+                        binding.checkhotwater.isChecked = true
+                    }
+                    if (table == "Yes") {
+                        binding.checktable.isChecked = true
+                    }
+                    if (locker == "Yes") {
+                        binding.checklocker.isChecked = true
+                    }
+                    if (fan == "Yes") {
+                        binding.checkcooler.isChecked = true
+                    }
+                    if (powerbackup == "Yes") {
+                        binding.checkpower.isChecked = true
+                    }
+                    if (washing == "Yes") {
+                        binding.checkwashing.isChecked = true
+                    }
+                    if (security == "Yes") {
+                        binding.checksecurity.isChecked = true
+                    }
+                    if (inout == "Yes") {
+                        binding.checkinout.isChecked = true
+                    }
+                    if (attach == "Yes") {
+                        binding.checkattached.isChecked = true
+                    }
+                    if (shower == "Yes") {
+                        binding.checkshower.isChecked = true
+                    }
+                    if (parking == "Yes") {
+                        binding.checkparking.isChecked = true
+                    }
+                    if (mess == "Yes") {
+                        binding.checkmess.isChecked = true
+                    }
+                    if (tv == "Yes") {
+                        binding.checktv.isChecked = true
+                    }
+                    if (gas == "Yes") {
+                        binding.checkgas.isChecked = true
+                    }
+                    if (dining == "Yes") {
+                        binding.checkdining.isChecked = true
+                    }
+                    if (refrigerator == "Yes") {
+                        binding.checkrefre.isChecked = true
+                    }
+                    if (sofa == "Yes") {
+                        binding.checksofa.isChecked = true
+                    }
+                    if (elevator == "Yes") {
+                        binding.checkelvator.isChecked = true
+                    }
+                    if (play == "Yes") {
+                        binding.checkground.isChecked = true
+                    }
+                    if (gym == "Yes") {
+                        binding.checkgym.isChecked = true
+                    }
+                    if (studyroom == "Yes") {
+                        binding.checkstudyroom.isChecked = true
+                    }
+                    if (kitchen == "Yes") {
+                        binding.checkkitchenn.isChecked = true
+                    }
+                    if (balcony == "Yes") {
+                        binding.checkbalcony.isChecked = true
+                    }
+                    if (indian == "Yes") {
+                        binding.checkindiant.isChecked = true
+                    }
+                    if (western == "Yes") {
+                        binding.checkwesterntt.isChecked = true
+                    }
+                    if (terrace == "Yes") {
+                        binding.checkterrace.isChecked = true
+                    }
+                    if (furnished == "Yes") {
+                        binding.checkfullf.isChecked = true
+                    }
+                    binding.facility.setText(more)
                 }
-                if (ac == "Yes") {
-                    binding!!.checkac.isChecked = true
-                }
-                if (rowater == "Yes") {
-                    binding!!.checkrowateer.isChecked = true
-                }
-                if (water == "Yes") {
-                    binding!!.checkwateerr.isChecked = true
-                }
-                if (wifi == "Yes") {
-                    binding!!.checkwifi.isChecked = true
-                }
-                if (cctv == "Yes") {
-                    binding!!.checkcamera.isChecked = true
-                }
-                if (bed == "Yes") {
-                    binding!!.checkbed.isChecked = true
-                }
-                if (hotwater == "Yes") {
-                    binding!!.checkhotwater.isChecked = true
-                }
-                if (table == "Yes") {
-                    binding!!.checktable.isChecked = true
-                }
-                if (locker == "Yes") {
-                    binding!!.checklocker.isChecked = true
-                }
-                if (fan == "Yes") {
-                    binding!!.checkcooler.isChecked = true
-                }
-                if (powerbackup == "Yes") {
-                    binding!!.checkpower.isChecked = true
-                }
-                if (washing == "Yes") {
-                    binding!!.checkwashing.isChecked = true
-                }
-                if (security == "Yes") {
-                    binding!!.checksecurity.isChecked = true
-                }
-                if (inout == "Yes") {
-                    binding!!.checkinout.isChecked = true
-                }
-                if (attach == "Yes") {
-                    binding!!.checkattached.isChecked = true
-                }
-                if (shower == "Yes") {
-                    binding!!.checkshower.isChecked = true
-                }
-                if (parking == "Yes") {
-                    binding!!.checkparking.isChecked = true
-                }
-                if (mess == "Yes") {
-                    binding!!.checkmess.isChecked = true
-                }
-                if (tv == "Yes") {
-                    binding!!.checktv.isChecked = true
-                }
-                if (gas == "Yes") {
-                    binding!!.checkgas.isChecked = true
-                }
-                if (dining == "Yes") {
-                    binding!!.checkdining.isChecked = true
-                }
-                if (refrigerator == "Yes") {
-                    binding!!.checkrefre.isChecked = true
-                }
-                if (sofa == "Yes") {
-                    binding!!.checksofa.isChecked = true
-                }
-                if (elevator == "Yes") {
-                    binding!!.checkelvator.isChecked = true
-                }
-                if (play == "Yes") {
-                    binding!!.checkground.isChecked = true
-                }
-                if (gym == "Yes") {
-                    binding!!.checkgym.isChecked = true
-                }
-                if (studyroom == "Yes") {
-                    binding!!.checkstudyroom.isChecked = true
-                }
-                if (kitchen == "Yes") {
-                    binding!!.checkkitchenn.isChecked = true
-                }
-                if (balcony == "Yes") {
-                    binding!!.checkbalcony.isChecked = true
-                }
-                if (indian == "Yes") {
-                    binding!!.checkindiant.isChecked = true
-                }
-                if (western == "Yes") {
-                    binding!!.checkwesterntt.isChecked = true
-                }
-                if (terrace == "Yes") {
-                    binding!!.checkterrace.isChecked = true
-                }
-                if (furnished == "Yes") {
-                    binding!!.checkfullf.isChecked = true
-                }
-                binding!!.facility.setText(morefaci)
             }
-        FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-            .collection("AllRule").document(id).get().addOnSuccessListener { documentSnapshot ->
-                val clean = documentSnapshot.getString("clean")
-                val trouble = documentSnapshot.getString("trouble")
-                val licence = documentSnapshot.getString("licence")
-                val gateenry = documentSnapshot.getString("gateenry")
-                val alcohol = documentSnapshot.getString("alcohol")
-                val damage = documentSnapshot.getString("damage")
-                val ousiders = documentSnapshot.getString("ousiders")
-                val permission = documentSnapshot.getString("permission")
-                val morerule = documentSnapshot.getString("more")
+        }
+        if (id==null){
+            toast("Something is wrong")
+        }else{
+            rulesViewModel.getRules(id)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            rulesViewModel.data.collect {
+                it?.let { documentSnapshot ->
+
+                    val clean = documentSnapshot.clean
+                    val trouble = documentSnapshot.trouble
+                    val licence = documentSnapshot.licence
+                    val gateenry = documentSnapshot.gateentry
+                    val alcohol = documentSnapshot.alcohol
+                    val damage = documentSnapshot.damage
+                    val ousiders = documentSnapshot.outsiders
+                    val permission = documentSnapshot.permission
+                    val morerule = documentSnapshot.more
 
 
-                if (clean == "Yes") {
-                    binding!!.clinerule.isChecked = true
+                    if (clean == "Yes") {
+                        binding.clinerule.isChecked = true
+                    }
+                    if (trouble == "Yes") {
+                        binding.nottrublerule.isChecked = true
+                    }
+                    if (licence == "Yes") {
+                        binding.licencerule.isChecked = true
+                    }
+                    if (gateenry == "Yes") {
+                        binding.entryrule.isChecked = true
+                    }
+                    if (alcohol == "Yes") {
+                        binding.alcoholrule.isChecked = true
+                    }
+                    if (damage == "Yes") {
+                        binding.damagerule.isChecked = true
+                    }
+                    if (ousiders == "Yes") {
+                        binding.outsiderrule.isChecked = true
+                    }
+                    if (permission == "Yes") {
+                        binding.prentperule.isChecked = true
+                    }
+                    binding.rules.setText(morerule)
+
                 }
-                if (trouble == "Yes") {
-                    binding!!.nottrublerule.isChecked = true
-                }
-                if (licence == "Yes") {
-                    binding!!.licencerule.isChecked = true
-                }
-                if (gateenry == "Yes") {
-                    binding!!.entryrule.isChecked = true
-                }
-                if (alcohol == "Yes") {
-                    binding!!.alcoholrule.isChecked = true
-                }
-                if (damage == "Yes") {
-                    binding!!.damagerule.isChecked = true
-                }
-                if (ousiders == "Yes") {
-                    binding!!.outsiderrule.isChecked = true
-                }
-                if (permission == "Yes") {
-                    binding!!.prentperule.isChecked = true
-                }
-                binding!!.rules.setText(morerule)
             }
+        }
 
-        binding!!.opengallerybtn2.setOnClickListener {
+
+        binding.opengallerybtn2.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.setType("image/*")
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             startActivityForResult(intent, PICK_IMAGE)
-            binding!!.cureentimageview.visibility = View.VISIBLE
+            binding.cureentimageview.visibility = View.VISIBLE
         }
 
 
-        binding!!.yesdeposit.setOnClickListener {
-            binding!!.deposit.visibility = View.VISIBLE
-            binding!!.nodepositblue.visibility = View.GONE
+        binding.yesdeposit.setOnClickListener {
+            binding.deposit.visibility = View.VISIBLE
+            binding.nodepositblue.visibility = View.GONE
         }
-        binding!!.nodeposit.setOnClickListener {
-            binding!!.deposit.visibility = View.GONE
-            binding!!.nodepositblue.visibility = View.VISIBLE
+        binding.nodeposit.setOnClickListener {
+            binding.deposit.visibility = View.GONE
+            binding.nodepositblue.visibility = View.VISIBLE
         }
-        binding!!.yescharge.setOnClickListener {
-            binding!!.extracharges.visibility = View.VISIBLE
-            binding!!.noextrablue.visibility = View.GONE
+        binding.yescharge.setOnClickListener {
+            binding.extracharges.visibility = View.VISIBLE
+            binding.noextrablue.visibility = View.GONE
         }
-        binding!!.nocharge.setOnClickListener {
-            binding!!.extracharges.visibility = View.GONE
-            binding!!.noextrablue.visibility = View.VISIBLE
-        }
-
-        binding!!.yesargee.setOnClickListener {
-            binding!!.yesagreeview.visibility = View.VISIBLE
-            binding!!.noagreetext.visibility = View.GONE
-        }
-        binding!!.noagree.setOnClickListener {
-            binding!!.yesagreeview.visibility = View.GONE
-            binding!!.noagreetext.visibility = View.VISIBLE
+        binding.nocharge.setOnClickListener {
+            binding.extracharges.visibility = View.GONE
+            binding.noextrablue.visibility = View.VISIBLE
         }
 
-        binding!!.back.setOnClickListener { finish() }
-        binding!!.justrehds.setOnClickListener { }
+        binding.yesargee.setOnClickListener {
+            binding.yesagreeview.visibility = View.VISIBLE
+            binding.noagreetext.visibility = View.GONE
+        }
+        binding.noagree.setOnClickListener {
+            binding.yesagreeview.visibility = View.GONE
+            binding.noagreetext.visibility = View.VISIBLE
+        }
 
-        binding!!.capturelocation2.setOnClickListener {
+        binding.back.setOnClickListener { finish() }
+        binding.justrehds.setOnClickListener { }
+
+        binding.capturelocation2.setOnClickListener {
             checkpermission()
             dialog1!!.show()
         }
-        binding!!.mapview.setOnClickListener {
+        binding.mapview.setOnClickListener {
             val intent = Intent(
                 this@EditResidencyDataActivity,
                 MapsActivity::class.java
@@ -738,7 +756,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             intent.putExtra("name", "Your residency name will fetch here")
             startActivity(intent)
         }
-        binding!!.olmapview.setOnClickListener {
+        binding.olmapview.setOnClickListener {
             val intent = Intent(
                 this@EditResidencyDataActivity,
                 MapsActivity::class.java
@@ -748,129 +766,129 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             intent.putExtra("name", name)
             startActivity(intent)
         }
-        val type = binding!!.rentaltype.selectedItem.toString()
+        val type = binding.rentaltype.selectedItem.toString()
 
 
-        binding!!.submitresibtn.setOnClickListener {
+        binding.submitresibtn.setOnClickListener {
             dialog!!.show()
-            val type = binding!!.rentaltype.selectedItem.toString()
+            val type = binding.rentaltype.selectedItem.toString()
 
             if (type == "Flat") {
-                binding!!.flatview1.visibility = View.VISIBLE
-                val ID01 = binding!!.flatview1.checkedRadioButtonId
+                binding.flatview1.visibility = View.VISIBLE
+                val ID01 = binding.flatview1.checkedRadioButtonId
                 val radioButton01 = findViewById<RadioButton>(ID01)
-                binding!!.viewresitypetext.text = "Flat"
+                binding.viewresitypetext.text = "Flat"
 
                 if (radioButton01.text == "1RK") {
-                    binding!!.viewresisubtypetext.text = "1RK"
+                    binding.viewresisubtypetext.text = "1RK"
                 }
                 if (radioButton01.text == "1BHK") {
-                    binding!!.viewresisubtypetext.text = "1BHK"
+                    binding.viewresisubtypetext.text = "1BHK"
                 }
                 if (radioButton01.text == "2BHK") {
-                    binding!!.viewresisubtypetext.text = "2BHK"
+                    binding.viewresisubtypetext.text = "2BHK"
                 }
                 if (radioButton01.text == "3BHK") {
-                    binding!!.viewresisubtypetext.text = "3BHK"
+                    binding.viewresisubtypetext.text = "3BHK"
                 }
                 if (radioButton01.text == "4BHK") {
-                    binding!!.viewresisubtypetext.text = "4BHK"
+                    binding.viewresisubtypetext.text = "4BHK"
                 }
                 if (radioButton01.text == "5BHK") {
-                    binding!!.viewresisubtypetext.text = "5BHK"
+                    binding.viewresisubtypetext.text = "5BHK"
                 }
             } else if (type == "Room") {
-                binding!!.roomview1.visibility = View.VISIBLE
-                val ID02 = binding!!.roomview1.checkedRadioButtonId
+                binding.roomview1.visibility = View.VISIBLE
+                val ID02 = binding.roomview1.checkedRadioButtonId
                 val radioButton02 = findViewById<RadioButton>(ID02)
-                binding!!.viewresitypetext.text = "Room"
+                binding.viewresitypetext.text = "Room"
 
                 if (radioButton02.text == "Single Room") {
-                    binding!!.viewresisubtypetext.text = "Single Room"
+                    binding.viewresisubtypetext.text = "Single Room"
                 }
                 if (radioButton02.text == "Double Room") {
-                    binding!!.viewresisubtypetext.text = "Double Room"
+                    binding.viewresisubtypetext.text = "Double Room"
                 }
                 if (radioButton02.text == "Triple Room") {
-                    binding!!.viewresisubtypetext.text = "Triple Room"
+                    binding.viewresisubtypetext.text = "Triple Room"
                 }
             } else if (type == "Stutter") {
-                binding!!.viewresitypetext.text = "Shutter"
+                binding.viewresitypetext.text = "Shutter"
 
-                binding!!.viewresisubtypetext.text = "Shutter"
+                binding.viewresisubtypetext.text = "Shutter"
             } else if (type == "House") {
-                binding!!.viewresitypetext.text = "House"
-                binding!!.viewresisubtypetext.text = "House"
+                binding.viewresitypetext.text = "House"
+                binding.viewresisubtypetext.text = "House"
             } else if (type == "Building") {
-                binding!!.viewresitypetext.text = "Building"
-                binding!!.viewresisubtypetext.text = "Building"
+                binding.viewresitypetext.text = "Building"
+                binding.viewresisubtypetext.text = "Building"
             } else if (type == "") {
-                val ttypee = binding!!.viewresitypetext.text.toString()
+                val ttypee = binding.viewresitypetext.text.toString()
                 if (ttypee == "Flat") {
-                    val ID01 = binding!!.flatview1.checkedRadioButtonId
+                    val ID01 = binding.flatview1.checkedRadioButtonId
                     val radioButton01 = findViewById<RadioButton>(ID01)
                     if (radioButton01.text == "1RK") {
-                        binding!!.viewresisubtypetext.text = "1RK"
+                        binding.viewresisubtypetext.text = "1RK"
                     }
                     if (radioButton01.text == "1BHK") {
-                        binding!!.viewresisubtypetext.text = "1BHK"
+                        binding.viewresisubtypetext.text = "1BHK"
                     }
                     if (radioButton01.text == "2BHK") {
-                        binding!!.viewresisubtypetext.text = "2BHK"
+                        binding.viewresisubtypetext.text = "2BHK"
                     }
                     if (radioButton01.text == "3BHK") {
-                        binding!!.viewresisubtypetext.text = "3BHK"
+                        binding.viewresisubtypetext.text = "3BHK"
                     }
                     if (radioButton01.text == "4BHK") {
-                        binding!!.viewresisubtypetext.text = "4BHK"
+                        binding.viewresisubtypetext.text = "4BHK"
                     }
                     if (radioButton01.text == "5BHK") {
-                        binding!!.viewresisubtypetext.text = "5BHK"
+                        binding.viewresisubtypetext.text = "5BHK"
                     }
                 } else if (ttypee == "Room") {
-                    val ID02 = binding!!.roomview1.checkedRadioButtonId
+                    val ID02 = binding.roomview1.checkedRadioButtonId
                     val radioButton02 = findViewById<RadioButton>(ID02)
                     if (radioButton02.text == "Single Room") {
-                        binding!!.viewresisubtypetext.text = "Single Room"
+                        binding.viewresisubtypetext.text = "Single Room"
                     }
                     if (radioButton02.text == "Double Room") {
-                        binding!!.viewresisubtypetext.text = "Double Room"
+                        binding.viewresisubtypetext.text = "Double Room"
                     }
                     if (radioButton02.text == "Triple Room") {
-                        binding!!.viewresisubtypetext.text = "Triple Room"
+                        binding.viewresisubtypetext.text = "Triple Room"
                     }
                 } else if (ttypee == "Stutter") {
-                    binding!!.viewresisubtypetext.text = "Shutter"
+                    binding.viewresisubtypetext.text = "Shutter"
                 } else if (ttypee == "House") {
-                    binding!!.viewresisubtypetext.text = "House"
+                    binding.viewresisubtypetext.text = "House"
                 } else if (ttypee == "Building") {
-                    binding!!.viewresisubtypetext.text = "Building"
+                    binding.viewresisubtypetext.text = "Building"
                 }
             }
 
-            val ID1 = binding!!.mainradiodeposit.checkedRadioButtonId
+            val ID1 = binding.mainradiodeposit.checkedRadioButtonId
             val radioButton11 = findViewById<RadioButton>(ID1)
 
-            val ID2 = binding!!.mainradioextra.checkedRadioButtonId
+            val ID2 = binding.mainradioextra.checkedRadioButtonId
             val radioButton22 = findViewById<RadioButton>(ID2)
 
-            val ID4 = binding!!.mainrediopolicy.checkedRadioButtonId
+            val ID4 = binding.mainrediopolicy.checkedRadioButtonId
             val radioButton33 = findViewById<RadioButton>(ID4)
             if (radioButton11.text == "Yes") {
-                if (!binding!!.deposit.text.toString().isEmpty()) {
-                    val deposit = binding!!.deposit.text.toString()
+                if (binding.deposit.text.toString().isNotEmpty()) {
+                    val deposit = binding.deposit.text.toString()
 
                     if (radioButton22.text == "Yes") {
-                        if (!binding!!.extracharges.text.toString().isEmpty()) {
-                            val extra = binding!!.extracharges.text.toString()
+                        if (binding.extracharges.text.toString().isNotEmpty()) {
+                            val extra = binding.extracharges.text.toString()
 
                             if (radioButton33.text == "Agreement will be done") {
-                                if (!binding!!.periodtime.text.toString().isEmpty()) {
-                                    val period = binding!!.periodtime.text.toString().toInt()
-                                    val policy = binding!!.yesagreetext.text.toString()
-                                    checktext(id, deposit, extra, period, policy)
+                                if (binding.periodtime.text.toString().isNotEmpty()) {
+                                    val period = binding.periodtime.text.toString().toInt()
+                                    val policy = binding.yesagreetext.text.toString()
+                                    checktext(id!!, deposit, extra, period, policy)
                                 } else {
-                                    binding!!.periodtime.error =
+                                    binding.periodtime.error =
                                         "Please enter how many months agreement will be done"
                                     dialog!!.dismiss()
                                     Toast.makeText(
@@ -881,11 +899,11 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                                 }
                             } else if (radioButton33.text == "No Agreement, we have own rules") {
                                 val period = 708
-                                val policy = binding!!.noagreetext.text.toString()
-                                checktext(id, deposit, extra, period, policy)
+                                val policy = binding.noagreetext.text.toString()
+                                checktext(id!!, deposit, extra, period, policy)
                             }
                         } else {
-                            binding!!.extracharges.error = "Please enter extra charges details"
+                            binding.extracharges.error = "Please enter extra charges details"
                             dialog!!.dismiss()
                             Toast.makeText(
                                 this@EditResidencyDataActivity,
@@ -897,14 +915,14 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                         val extra = "No extra charges will taken"
 
                         if (radioButton33.text == "Agreement will be done") {
-                            if (!binding!!.periodtime.text.toString().isEmpty()) {
-                                val period = binding!!.periodtime.text.toString().toInt()
+                            if (binding.periodtime.text.toString().isNotEmpty()) {
+                                val period = binding.periodtime.text.toString().toInt()
 
-                                val policy = binding!!.yesagreetext.text.toString()
+                                val policy = binding.yesagreetext.text.toString()
 
-                                checktext(id, deposit, extra, period, policy)
+                                checktext(id!!, deposit, extra, period, policy)
                             } else {
-                                binding!!.periodtime.error =
+                                binding.periodtime.error =
                                     "Please enter how many months agreement will be done"
                                 dialog!!.dismiss()
                                 Toast.makeText(
@@ -915,12 +933,12 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                             }
                         } else if (radioButton33.text == "No Agreement, we have own rules") {
                             val period = 708
-                            val policy = binding!!.noagreetext.text.toString()
-                            checktext(id, deposit, extra, period, policy)
+                            val policy = binding.noagreetext.text.toString()
+                            checktext(id!!, deposit, extra, period, policy)
                         }
                     }
                 } else {
-                    binding!!.deposit.error = "Please enter deposit details"
+                    binding.deposit.error = "Please enter deposit details"
                     dialog!!.dismiss()
                     Toast.makeText(
                         this@EditResidencyDataActivity,
@@ -932,17 +950,17 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                 val deposit = "No deposit will taken"
 
                 if (radioButton22.text == "Yes") {
-                    if (!binding!!.extracharges.text.toString().isEmpty()) {
-                        val extra = binding!!.extracharges.text.toString()
+                    if (binding.extracharges.text.toString().isNotEmpty()) {
+                        val extra = binding.extracharges.text.toString()
 
                         if (radioButton33.text == "Agreement will be done") {
-                            if (!binding!!.periodtime.text.toString().isEmpty()) {
-                                val period = binding!!.periodtime.text.toString().toInt()
+                            if (binding.periodtime.text.toString().isNotEmpty()) {
+                                val period = binding.periodtime.text.toString().toInt()
 
-                                val policy = binding!!.yesagreetext.text.toString()
-                                checktext(id, deposit, extra, period, policy)
+                                val policy = binding.yesagreetext.text.toString()
+                                checktext(id!!, deposit, extra, period, policy)
                             } else {
-                                binding!!.periodtime.error =
+                                binding.periodtime.error =
                                     "Please enter how many months agreement will be done"
                                 dialog!!.dismiss()
                                 Toast.makeText(
@@ -954,11 +972,11 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                         } else if (radioButton33.text == "No Agreement, we have own rules") {
                             val period = 708
 
-                            val policy = binding!!.noagreetext.text.toString()
-                            checktext(id, deposit, extra, period, policy)
+                            val policy = binding.noagreetext.text.toString()
+                            checktext(id!!, deposit, extra, period, policy)
                         }
                     } else {
-                        binding!!.extracharges.error = "Please enter extra charges details"
+                        binding.extracharges.error = "Please enter extra charges details"
                         dialog!!.dismiss()
                         Toast.makeText(
                             this@EditResidencyDataActivity,
@@ -970,13 +988,13 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                     val extra = "No extra charges will taken"
 
                     if (radioButton33.text == "Agreement will be done") {
-                        if (!binding!!.periodtime.text.toString().isEmpty()) {
-                            val period = binding!!.periodtime.text.toString().toInt()
+                        if (binding.periodtime.text.toString().isNotEmpty()) {
+                            val period = binding.periodtime.text.toString().toInt()
 
-                            val policy = binding!!.yesagreetext.text.toString()
-                            checktext(id, deposit, extra, period, policy)
+                            val policy = binding.yesagreetext.text.toString()
+                            checktext(id!!, deposit, extra, period, policy)
                         } else {
-                            binding!!.periodtime.error =
+                            binding.periodtime.error =
                                 "Please enter how many months agreement will be done"
                             dialog!!.dismiss()
                             Toast.makeText(
@@ -987,8 +1005,8 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                         }
                     } else if (radioButton33.text == "No Agreement, we have own rules") {
                         val period = 708
-                        val policy = binding!!.noagreetext.text.toString()
-                        checktext(id, deposit, extra, period, policy)
+                        val policy = binding.noagreetext.text.toString()
+                        checktext(id!!, deposit, extra, period, policy)
                     }
                 }
             }
@@ -1002,15 +1020,15 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         periodz: Int,
         policyz: String
     ) {
-        val nametext = binding!!.resiname.text.toString()
-        val addresstext = binding!!.resiaddress.text.toString()
-        val onametext = binding!!.oname.text.toString()
-        val contacttext = binding!!.contact.text.toString()
-        val whatsapptext = binding!!.whatsapp.text.toString()
-        val renttext = binding!!.rentamount.text.toString()
+        val nametext = binding.resiname.text.toString()
+        val addresstext = binding.resiaddress.text.toString()
+        val onametext = binding.oname.text.toString()
+        val contacttext = binding.contact.text.toString()
+        val whatsapptext = binding.whatsapp.text.toString()
+        val renttext = binding.rentamount.text.toString()
 
 
-        if (!nametext.isEmpty() && !addresstext.isEmpty() && !onametext.isEmpty() && !contacttext.isEmpty() && !whatsapptext.isEmpty() && !renttext.isEmpty()) {
+        if (nametext.isNotEmpty() && addresstext.isNotEmpty() && onametext.isNotEmpty() && contacttext.isNotEmpty() && whatsapptext.isNotEmpty() && renttext.isNotEmpty()) {
             if (newlist.isEmpty() && oldlist.isEmpty()) {
                 dialog!!.dismiss()
                 Toast.makeText(
@@ -1152,7 +1170,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (nametext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.resiname.error = "Please enter residency name"
+                binding.resiname.error = "Please enter residency name"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter residency name",
@@ -1162,7 +1180,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (addresstext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.resiaddress.error = "Please enter residency address"
+                binding.resiaddress.error = "Please enter residency address"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter residency address",
@@ -1172,7 +1190,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (onametext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.oname.error = "Please enter residency operator name"
+                binding.oname.error = "Please enter residency operator name"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter residency operator name",
@@ -1182,7 +1200,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (contacttext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.contact.error = "Please enter contact number"
+                binding.contact.error = "Please enter contact number"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter contact number",
@@ -1192,7 +1210,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (whatsapptext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.whatsapp.error = "Please enter whatsapp number"
+                binding.whatsapp.error = "Please enter whatsapp number"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter whatsapp number",
@@ -1202,7 +1220,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             if (renttext.isEmpty()) {
                 dialog!!.dismiss()
 
-                binding!!.rentamount.error = "Please enter monthly rent"
+                binding.rentamount.error = "Please enter monthly rent"
                 Toast.makeText(
                     this@EditResidencyDataActivity,
                     "Please enter monthly rent",
@@ -1230,22 +1248,22 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             i++
         }
 
-        val name = binding!!.resiname.text.toString()
-        val address = binding!!.resiaddress.text.toString()
-        val oname = binding!!.oname.text.toString()
-        val contact = binding!!.contact.text.toString()
-        val whatsapp = binding!!.whatsapp.text.toString()
-        val mail = binding!!.email.text.toString()
-        val rent = binding!!.rentamount.text.toString()
-        val erent = binding!!.explainrent.text.toString()
-        val more = binding!!.moredetails.text.toString()
-        val ltype = binding!!.viewresitypetext.text.toString()
-        val lsubtype = binding!!.viewresisubtypetext.text.toString()
-        val larea = binding!!.vieareatext.text.toString()
+        val name = binding.resiname.text.toString()
+        val address = binding.resiaddress.text.toString()
+        val oname = binding.oname.text.toString()
+        val contact = binding.contact.text.toString()
+        val whatsapp = binding.whatsapp.text.toString()
+        val mail = binding.email.text.toString()
+        val rent = binding.rentamount.text.toString()
+        val erent = binding.explainrent.text.toString()
+        val more = binding.moredetails.text.toString()
+        val ltype = binding.viewresitypetext.text.toString()
+        val lsubtype = binding.viewresisubtypetext.text.toString()
+        val larea = binding.vieareatext.text.toString()
 
-        if (binding!!.showlocationtext.text.toString().isEmpty()) {
-            lat = oldlatitude
-            lan = oldlongitude
+        if (binding.showlocationtext.text.toString().isEmpty()) {
+            lat = oldlatitude!!
+            lan = oldlongitude!!
         } else {
             lat = latitude
             lan = longitude
@@ -1319,7 +1337,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         }
 
         dialog!!.dismiss()
-        binding!!.numbertext.text = "Uploaded Successfully"
+        binding.numbertext.text = "Uploaded Successfully"
 
         newlist.clear()
     }
@@ -1339,7 +1357,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                             newlist.add(newuri)
                         }
                         multipleImageAdapter!!.notifyDataSetChanged()
-                        binding!!.numbertext.text = "You have select " + newlist.size + " images"
+                        binding.numbertext.text = "You have select " + newlist.size + " images"
                     }
                 }
             }
@@ -1391,7 +1409,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                 fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener { location ->
                 if (location != null) {
-                    binding!!.locationview.visibility = View.VISIBLE
+                    binding.locationview.visibility = View.VISIBLE
                     dialog1!!.dismiss()
                     Toast.makeText(
                         this@EditResidencyDataActivity,
@@ -1400,7 +1418,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                     ).show()
                     latitude = location.latitude
                     longitude = location.longitude
-                    binding!!.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
+                    binding.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
 
 
                     //LatLng usercl = new LatLng(latitude, longitude);
@@ -1437,172 +1455,172 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
     }
 
     private fun addfacility(newDocID: String) {
-        val a1 = if (binding!!.checkCleanontime.isChecked) {
+        val a1 = if (binding.checkCleanontime.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a2 = if (binding!!.checkac.isChecked) {
+        val a2 = if (binding.checkac.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a3 = if (binding!!.checkrowateer.isChecked) {
+        val a3 = if (binding.checkrowateer.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a4 = if (binding!!.checkwateerr.isChecked) {
+        val a4 = if (binding.checkwateerr.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a5 = if (binding!!.checkwifi.isChecked) {
+        val a5 = if (binding.checkwifi.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a6 = if (binding!!.checkcamera.isChecked) {
+        val a6 = if (binding.checkcamera.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a7 = if (binding!!.checkbed.isChecked) {
+        val a7 = if (binding.checkbed.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a8 = if (binding!!.checkhotwater.isChecked) {
+        val a8 = if (binding.checkhotwater.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a9 = if (binding!!.checktable.isChecked) {
+        val a9 = if (binding.checktable.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a10 = if (binding!!.checklocker.isChecked) {
+        val a10 = if (binding.checklocker.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a11 = if (binding!!.checkcooler.isChecked) {
+        val a11 = if (binding.checkcooler.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a12 = if (binding!!.checkpower.isChecked) {
+        val a12 = if (binding.checkpower.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a13 = if (binding!!.checkwashing.isChecked) {
+        val a13 = if (binding.checkwashing.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a14 = if (binding!!.checksecurity.isChecked) {
+        val a14 = if (binding.checksecurity.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a15 = if (binding!!.checkinout.isChecked) {
+        val a15 = if (binding.checkinout.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a16 = if (binding!!.checkattached.isChecked) {
+        val a16 = if (binding.checkattached.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a17 = if (binding!!.checkshower.isChecked) {
+        val a17 = if (binding.checkshower.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a18 = if (binding!!.checkparking.isChecked) {
+        val a18 = if (binding.checkparking.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a19 = if (binding!!.checkmess.isChecked) {
+        val a19 = if (binding.checkmess.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a20 = if (binding!!.checktv.isChecked) {
+        val a20 = if (binding.checktv.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a21 = if (binding!!.checkgas.isChecked) {
+        val a21 = if (binding.checkgas.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a22 = if (binding!!.checkdining.isChecked) {
+        val a22 = if (binding.checkdining.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a23 = if (binding!!.checkrefre.isChecked) {
+        val a23 = if (binding.checkrefre.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a24 = if (binding!!.checksofa.isChecked) {
+        val a24 = if (binding.checksofa.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a25 = if (binding!!.checkelvator.isChecked) {
+        val a25 = if (binding.checkelvator.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a26 = if (binding!!.checkground.isChecked) {
+        val a26 = if (binding.checkground.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a27 = if (binding!!.checkgym.isChecked) {
+        val a27 = if (binding.checkgym.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a28 = if (binding!!.checkstudyroom.isChecked) {
+        val a28 = if (binding.checkstudyroom.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a29 = if (binding!!.checkkitchenn.isChecked) {
+        val a29 = if (binding.checkkitchenn.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a30 = if (binding!!.checkbalcony.isChecked) {
+        val a30 = if (binding.checkbalcony.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a31 = if (binding!!.checkindiant.isChecked) {
+        val a31 = if (binding.checkindiant.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a32 = if (binding!!.checkwesterntt.isChecked) {
+        val a32 = if (binding.checkwesterntt.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a33 = if (binding!!.checkterrace.isChecked) {
+        val a33 = if (binding.checkterrace.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a34 = if (binding!!.checkfullf.isChecked) {
+        val a34 = if (binding.checkfullf.isChecked) {
             "Yes"
         } else {
             "No"
@@ -1642,7 +1660,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         hashMap1["western"] = a32
         hashMap1["terrace"] = a33
         hashMap1["furnished"] = a34
-        val more = binding!!.facility.text.toString()
+        val more = binding.facility.text.toString()
         hashMap1["more"] = more
 
         FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
@@ -1657,42 +1675,42 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
     }
 
     private fun addrules(newDocID: String) {
-        val a01 = if (binding!!.clinerule.isChecked) {
+        val a01 = if (binding.clinerule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a02 = if (binding!!.nottrublerule.isChecked) {
+        val a02 = if (binding.nottrublerule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a03 = if (binding!!.licencerule.isChecked) {
+        val a03 = if (binding.licencerule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a04 = if (binding!!.entryrule.isChecked) {
+        val a04 = if (binding.entryrule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a05 = if (binding!!.alcoholrule.isChecked) {
+        val a05 = if (binding.alcoholrule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a06 = if (binding!!.damagerule.isChecked) {
+        val a06 = if (binding.damagerule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a07 = if (binding!!.outsiderrule.isChecked) {
+        val a07 = if (binding.outsiderrule.isChecked) {
             "Yes"
         } else {
             "No"
         }
-        val a08 = if (binding!!.prentperule.isChecked) {
+        val a08 = if (binding.prentperule.isChecked) {
             "Yes"
         } else {
             "No"
@@ -1706,7 +1724,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         hashMap11["damage"] = a06
         hashMap11["ousiders"] = a07
         hashMap11["permission"] = a08
-        val more1 = binding!!.rules.text.toString()
+        val more1 = binding.rules.text.toString()
         hashMap11["more"] = more1
 
         FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
@@ -1718,5 +1736,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
                     Toast.LENGTH_SHORT
                 ).show()
             }
+    }   private fun toast(s: String) {
+        Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
     }
 }

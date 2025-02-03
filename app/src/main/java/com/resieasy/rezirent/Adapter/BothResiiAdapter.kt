@@ -1,11 +1,12 @@
 package com.resieasy.rezirent.Adapter
 
-import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,17 +16,33 @@ import com.resieasy.rezirent.Activity.ShowSellDataActivity
 import com.resieasy.rezirent.Class.BothResiClass
 import com.resieasy.rezirent.Class.LikeClass
 import com.resieasy.rezirent.R
+import com.resieasy.rezirent.ViewModel.FacilityViewModel
+import com.resieasy.rezirent.ViewModel.ShowHostelViewModel
+import com.resieasy.rezirent.ViewModel.ShowResiViewModel
+import com.resieasy.rezirent.ViewModel.ShowSellViewModel
 import com.resieasy.rezirent.databinding.BothhostelsapleBinding
 import com.resieasy.rezirent.databinding.BothresisampleBinding
 import com.resieasy.rezirent.databinding.BothsellsampleBinding
 import com.squareup.picasso.Picasso
 import java.util.Date
 
-class BothResiiAdapter(var list: ArrayList<BothResiClass?>, var context: Context)
+class BothResiiAdapter(
+    var list: ArrayList<BothResiClass?>,
+    var context: AppCompatActivity,
+    private val showResiViewModel: ShowResiViewModel,
+    private val showSellViewModel: ShowSellViewModel,
+    private val showHostelViewModel: ShowHostelViewModel,
+    private val facilityViewModel: FacilityViewModel
+)
     :RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var RESI_VIEW_TYPE = 4
     private var Sell_VIEW_TYPE= 2
     private var HOSTEL_VIEW_TYPE  = 3
+
+    fun updateList(newList : ArrayList<BothResiClass?>){
+        list=newList
+        notifyDataSetChanged()
+    }
 
     inner class ResiViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var binding: BothresisampleBinding =
@@ -67,385 +84,473 @@ class BothResiiAdapter(var list: ArrayList<BothResiClass?>, var context: Context
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
         val data = list[position]
-        val id = data?.id
+      //  val id = data?.id
+        if (data != null) {
+            val id = data.id
 
-        if (viewHolder is ResiViewHolder) {
+            if (!id.isNullOrEmpty()) {
 
-            FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllImage").document(id!!).get()
-                .addOnSuccessListener { snapshot ->
-                    val firstimage = snapshot.getString("image0")
-                    Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
-                        .into(viewHolder.binding.bothsampleimage)
-                }
-            FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllData").document(id).get()
-                .addOnSuccessListener { snapshot ->
-                    val name = snapshot.getString("name")
-                    val resitype = snapshot.getString("subtype")
-                    val area = snapshot.getString("area")
-                    val address = snapshot.getString("address")
-                    val rent = snapshot.getString("rent")
-                    val agree = snapshot.getLong("period")!!.toInt()
 
-                    viewHolder.binding.bothsamplename.text = name
-                    viewHolder.binding.bothsampleaddress.text = address
-                    viewHolder.binding.bothsamplearea.text = area
-                    viewHolder.binding.bothsamplesubtype.text = resitype
-                    viewHolder.binding.bothresirenttext.text = rent + "₹/month"
-                    if (agree == 708) {
-                        viewHolder.binding.noagreeview.visibility = View.VISIBLE
-                        viewHolder.binding.yesagreeview.visibility = View.GONE
-                    } else {
-                        viewHolder.binding.noagreeview.visibility = View.GONE
-                        viewHolder.binding.yesagreeview.visibility = View.VISIBLE
-                    }
-                }
-            viewHolder.binding.resicart.setOnClickListener {
-                val intent = Intent(context, ShowResidencyDataActivity::class.java)
-                intent.putExtra("id", id)
-                context.startActivity(intent)
-            }
-            FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllFacility").document(id).get()
-                .addOnSuccessListener { documentSnapshot ->
-                    val clean = documentSnapshot.getString("clean")
-                    val ac = documentSnapshot.getString("ac")
-                    val rowater = documentSnapshot.getString("rowater")
-                    val water = documentSnapshot.getString("water")
-                    val wifi = documentSnapshot.getString("wifi")
-                    val cctv = documentSnapshot.getString("cctv")
-                    val bed = documentSnapshot.getString("bed")
-                    val hotwater = documentSnapshot.getString("hotwater")
-                    val table = documentSnapshot.getString("table")
-                    val locker = documentSnapshot.getString("locker")
-                    val fan = documentSnapshot.getString("fan")
-                    val powerbackup = documentSnapshot.getString("powerbackup")
-                    val washing = documentSnapshot.getString("washing")
-                    val security = documentSnapshot.getString("security")
-                    val inout = documentSnapshot.getString("inout")
-                    val attach = documentSnapshot.getString("attach")
-                    val shower = documentSnapshot.getString("shower")
-                    val parking = documentSnapshot.getString("parking")
-                    val mess = documentSnapshot.getString("mess")
-                    val tv = documentSnapshot.getString("tv")
-                    val gas = documentSnapshot.getString("gas")
-                    val dining = documentSnapshot.getString("dining")
-                    val refrigerator = documentSnapshot.getString("refrigerator")
-                    val sofa = documentSnapshot.getString("sofa")
-                    val elevator = documentSnapshot.getString("elevator")
-                    val play = documentSnapshot.getString("play")
-                    val gym = documentSnapshot.getString("gym")
-                    val studyroom = documentSnapshot.getString("studyroom")
-                    val kitchen = documentSnapshot.getString("kitchen")
-                    val balcony = documentSnapshot.getString("balcony")
-                    val indian = documentSnapshot.getString("indian")
-                    val western = documentSnapshot.getString("western")
-                    val terrace = documentSnapshot.getString("terrace")
-                    val furnished = documentSnapshot.getString("furnished")
-                    if (clean == "Yes") {
-                        viewHolder.binding.cleanbotcart.visibility = View.VISIBLE
-                    }
-                    if (ac == "Yes") {
-                        viewHolder.binding.acbotcart.visibility = View.VISIBLE
-                    }
-                    if (rowater == "Yes") {
-                        viewHolder.binding.rowaterbotcart.visibility = View.VISIBLE
-                    }
-                    if (water == "Yes") {
-                        viewHolder.binding.waterbotcart.visibility = View.VISIBLE
-                    }
-                    if (wifi == "Yes") {
-                        viewHolder.binding.wifibotcart.visibility = View.VISIBLE
-                    }
-                    if (cctv == "Yes") {
-                        viewHolder.binding.cctvbotcart.visibility = View.VISIBLE
-                    }
-                    if (bed == "Yes") {
-                        viewHolder.binding.bedbotcart.visibility = View.VISIBLE
-                    }
-                    if (hotwater == "Yes") {
-                        viewHolder.binding.hotwaterbotcart.visibility = View.VISIBLE
-                    }
-                    if (table == "Yes") {
-                        viewHolder.binding.tablebotcart.visibility = View.VISIBLE
-                    }
-                    if (locker == "Yes") {
-                        viewHolder.binding.lockerbotcart.visibility = View.VISIBLE
-                    }
-                    if (fan == "Yes") {
-                        viewHolder.binding.fanbotcart.visibility = View.VISIBLE
-                    }
-                    if (powerbackup == "Yes") {
-                        viewHolder.binding.backupbotcart.visibility = View.VISIBLE
-                    }
-                    if (washing == "Yes") {
-                        viewHolder.binding.washingbotcart.visibility = View.VISIBLE
-                    }
-                    if (security == "Yes") {
-                        viewHolder.binding.securitybotcart.visibility = View.VISIBLE
-                    }
-                    if (inout == "Yes") {
-                        viewHolder.binding.inoutbotcart.visibility = View.VISIBLE
-                    }
-                    if (attach == "Yes") {
-                        viewHolder.binding.attachedbotcart.visibility = View.VISIBLE
-                    }
-                    if (shower == "Yes") {
-                        viewHolder.binding.showerbotcart.visibility = View.VISIBLE
-                    }
-                    if (parking == "Yes") {
-                        viewHolder.binding.parkingbotcart.visibility = View.VISIBLE
-                    }
-                    if (mess == "Yes") {
-                        viewHolder.binding.messbotcart.visibility = View.VISIBLE
-                    }
-                    if (tv == "Yes") {
-                        viewHolder.binding.tvbotcart.visibility = View.VISIBLE
-                    }
-                    if (gas == "Yes") {
-                        viewHolder.binding.gasbotcart.visibility = View.VISIBLE
-                    }
-                    if (dining == "Yes") {
-                        viewHolder.binding.dianingbotcart.visibility = View.VISIBLE
-                    }
-                    if (refrigerator == "Yes") {
-                        viewHolder.binding.refribotcart.visibility = View.VISIBLE
-                    }
-                    if (sofa == "Yes") {
-                        viewHolder.binding.sofabotcart.visibility = View.VISIBLE
-                    }
-                    if (elevator == "Yes") {
-                        viewHolder.binding.elevatorbotcart.visibility = View.VISIBLE
-                    }
-                    if (play == "Yes") {
-                        viewHolder.binding.playbotcart.visibility = View.VISIBLE
-                    }
-                    if (gym == "Yes") {
-                        viewHolder.binding.gymbotcart.visibility = View.VISIBLE
-                    }
-                    if (studyroom == "Yes") {
-                        viewHolder.binding.studeybotcart.visibility = View.VISIBLE
-                    }
-                    if (kitchen == "Yes") {
-                        viewHolder.binding.kitchenbotcart.visibility = View.VISIBLE
-                    }
-                    if (balcony == "Yes") {
-                        viewHolder.binding.balconybotcart.visibility = View.VISIBLE
-                    }
-                    if (indian == "Yes") {
-                        viewHolder.binding.indianbotcart.visibility = View.VISIBLE
-                    }
-                    if (western == "Yes") {
-                        viewHolder.binding.westernbotcart.visibility = View.VISIBLE
-                    }
-                    if (terrace == "Yes") {
-                        viewHolder.binding.terracebotcart.visibility = View.VISIBLE
-                    }
-                    if (furnished == "Yes") {
-                        viewHolder.binding.furnishedbotcart.visibility = View.VISIBLE
-                    }
-                }.addOnFailureListener { }
-            FirebaseFirestore.getInstance().collection("Like")
-                .document(FirebaseAuth.getInstance().uid!!).collection("Nanded").document(id).get()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val document = task.result
-                        if (document.exists()) {
-                            viewHolder.binding.unlike.visibility = View.GONE
-                            viewHolder.binding.like.visibility = View.VISIBLE
-                        } else {
-                            viewHolder.binding.unlike.visibility = View.VISIBLE
-                            viewHolder.binding.like.visibility = View.GONE
+                if (viewHolder is ResiViewHolder) {
+
+                    FirebaseFirestore.getInstance().collection("Nanded")
+                        .document("NandedCity").collection("AllImage").document(id).get()
+                        .addOnSuccessListener { snapshot ->
+                            val firstimage = snapshot.getString("image0")
+                            Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
+                                .into(viewHolder.binding.bothsampleimage)
                         }
+
+                    showResiViewModel.getResiData(id)
+                    showResiData(showResiViewModel, context, viewHolder)
+                    facilityViewModel.getFacility(id)
+                    showFacilityData(facilityViewModel, context, viewHolder)
+
+                    viewHolder.binding.resicart.setOnClickListener {
+                        val intent = Intent(context, ShowResidencyDataActivity::class.java)
+                        intent.putExtra("id", id)
+                        context.startActivity(intent)
                     }
-                }
 
-            viewHolder.binding.unlike.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.GONE
-                viewHolder.binding.like.visibility = View.VISIBLE
-                val hashMap1 = HashMap<String, Any?>()
-                hashMap1["userid"] = FirebaseAuth.getInstance().uid
 
-                val date = Date()
-                val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).set(hashMap1).addOnSuccessListener {
+
+
+                    FirebaseFirestore.getInstance().collection("Like")
+                        .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                        .document(id).get()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val document = task.result
+                                if (document.exists()) {
+                                    viewHolder.binding.unlike.visibility = View.GONE
+                                    viewHolder.binding.like.visibility = View.VISIBLE
+                                } else {
+                                    viewHolder.binding.unlike.visibility = View.VISIBLE
+                                    viewHolder.binding.like.visibility = View.GONE
+                                }
+                            }
+                        }
+
+                    viewHolder.binding.unlike.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.GONE
+                        viewHolder.binding.like.visibility = View.VISIBLE
+                        val hashMap1 = HashMap<String, Any?>()
+                        hashMap1["userid"] = FirebaseAuth.getInstance().uid
+
+                        val date = Date()
+                        val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
+                        FirebaseFirestore.getInstance().collection("Like")
+                            .document(FirebaseAuth.getInstance().uid!!).set(hashMap1)
+                            .addOnSuccessListener {
+                                FirebaseFirestore.getInstance().collection("Like")
+                                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                                    .document(id).set(likeClass).addOnSuccessListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to your like list",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            }
+                    }
+                    viewHolder.binding.like.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.VISIBLE
+                        viewHolder.binding.like.visibility = View.GONE
                         FirebaseFirestore.getInstance().collection("Like")
                             .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                            .document(id).set(likeClass).addOnSuccessListener {
+                            .document(id).delete().addOnCompleteListener {
                                 Toast.makeText(
                                     context,
-                                    "Added to your like list",
+                                    "Remove from like list",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
                     }
-            }
-            viewHolder.binding.like.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.VISIBLE
-                viewHolder.binding.like.visibility = View.GONE
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                    .document(id).delete().addOnCompleteListener {
-                        Toast.makeText(
-                            context,
-                            "Remove from like list",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-            }
-        } else if (viewHolder is SellViewHolder) {
-             FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllImage").document(id!!).get()
-                .addOnSuccessListener { snapshot ->
-                    val firstimage = snapshot.getString("image0")
-                    Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
-                        .into(viewHolder.binding.bothsampleimage)
                 }
-            FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllData").document(id).get()
-                .addOnSuccessListener { snapshot ->
-                    val name = snapshot.getString("name")
-                    val resitype = snapshot.getString("subtype")
-                    val area = snapshot.getString("area")
-                    val address = snapshot.getString("address")
-                    val prize = snapshot.getString("prize")
+                else if (viewHolder is SellViewHolder) {
+                    FirebaseFirestore.getInstance().collection("Nanded")
+                        .document("NandedCity").collection("AllImage").document(id!!).get()
+                        .addOnSuccessListener { snapshot ->
+                            val firstimage = snapshot.getString("image0")
+                            Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
+                                .into(viewHolder.binding.bothsampleimage)
+                        }
+
+                    showSellViewModel.getSellData(id)
+                    showSellData(showSellViewModel, context, viewHolder)
+
+
+
+
+
+                    viewHolder.binding.sellcart.setOnClickListener {
+                        val intent = Intent(context, ShowSellDataActivity::class.java)
+                        intent.putExtra("id", id)
+                        context.startActivity(intent)
+                    }
+                    FirebaseFirestore.getInstance().collection("Like")
+                        .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                        .document(id).get()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val document = task.result
+                                if (document.exists()) {
+                                    viewHolder.binding.unlike.visibility = View.GONE
+                                    viewHolder.binding.like.visibility = View.VISIBLE
+                                } else {
+                                    viewHolder.binding.unlike.visibility = View.VISIBLE
+                                    viewHolder.binding.like.visibility = View.GONE
+                                }
+                            }
+                        }
+                    viewHolder.binding.unlike.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.GONE
+                        viewHolder.binding.like.visibility = View.VISIBLE
+                        val hashMap1 = HashMap<String, Any?>()
+                        hashMap1["userid"] = FirebaseAuth.getInstance().uid
+                        val date = Date()
+                        val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
+                        FirebaseFirestore.getInstance().collection("Like")
+                            .document(FirebaseAuth.getInstance().uid!!).set(hashMap1)
+                            .addOnSuccessListener {
+                                FirebaseFirestore.getInstance().collection("Like")
+                                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                                    .document(id).set(likeClass).addOnSuccessListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to your like list",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            }
+                    }
+                    viewHolder.binding.like.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.VISIBLE
+                        viewHolder.binding.like.visibility = View.GONE
+                        FirebaseFirestore.getInstance().collection("Like")
+                            .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                            .document(id).delete().addOnCompleteListener {
+                                Toast.makeText(
+                                    context,
+                                    "Remove from like list",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }
+                }
+                else if (viewHolder is HostelViewHolder) {
+                    FirebaseFirestore.getInstance().collection("Nanded")
+                        .document("NandedCity").collection("AllImage").document(id!!).get()
+                        .addOnSuccessListener { snapshot ->
+                            val firstimage = snapshot.getString("image0")
+                            Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
+                                .into(viewHolder.binding.bothsampleimage)
+                        }
+                    showHostelViewModel.getHostelData(id)
+                    showHostelData(showHostelViewModel, context, viewHolder)
+
+                    facilityViewModel.getFacility(id)
+                    showHostelFacility(facilityViewModel, context, viewHolder)
+
+                    viewHolder.binding.hostelcart.setOnClickListener {
+                        val intent = Intent(context, ShowHostelDataActivity::class.java)
+                        intent.putExtra("id", id)
+                        context.startActivity(intent)
+                    }
+
+                    FirebaseFirestore.getInstance().collection("Like")
+                        .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                        .document(id).get()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val document = task.result
+                                if (document.exists()) {
+                                    viewHolder.binding.unlike.visibility = View.GONE
+                                    viewHolder.binding.like.visibility = View.VISIBLE
+                                } else {
+                                    viewHolder.binding.unlike.visibility = View.VISIBLE
+                                    viewHolder.binding.like.visibility = View.GONE
+                                }
+                            }
+                        }
+                    viewHolder.binding.unlike.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.GONE
+                        viewHolder.binding.like.visibility = View.VISIBLE
+                        val hashMap1 = HashMap<String, Any?>()
+                        hashMap1["userid"] = FirebaseAuth.getInstance().uid
+                        val date = Date()
+                        val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
+                        FirebaseFirestore.getInstance().collection("Like")
+                            .document(FirebaseAuth.getInstance().uid!!).set(hashMap1)
+                            .addOnSuccessListener {
+                                FirebaseFirestore.getInstance().collection("Like")
+                                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                                    .document(id).set(likeClass).addOnSuccessListener {
+                                        Toast.makeText(
+                                            context,
+                                            "Added to your like list",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            }
+                    }
+
+                    viewHolder.binding.like.setOnClickListener {
+                        viewHolder.binding.unlike.visibility = View.VISIBLE
+                        viewHolder.binding.like.visibility = View.GONE
+                        FirebaseFirestore.getInstance().collection("Like")
+                            .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
+                            .document(id).delete().addOnCompleteListener {
+                                Toast.makeText(
+                                    context,
+                                    "Remove from like list",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showHostelFacility(facilityViewModel: FacilityViewModel,   context: AppCompatActivity, viewHolder:  HostelViewHolder) {
+      context.lifecycleScope.launchWhenStarted {
+          facilityViewModel.data.collect{
+              it?.let {documentSnapshot->
+                  val clean = documentSnapshot.clean
+                  val ac = documentSnapshot.ac
+                  val rowater = documentSnapshot.rowater
+                  val water = documentSnapshot.water
+                  val wifi = documentSnapshot.wifi
+                  val cctv = documentSnapshot.cctv
+                  val bed = documentSnapshot.bed
+                  val hotwater = documentSnapshot.hotwater
+                  val table = documentSnapshot.table
+                  val locker = documentSnapshot.locker
+                  val fan = documentSnapshot.fan
+                  val powerbackup = documentSnapshot.powerbackup
+                  val washing = documentSnapshot.washing
+                  val security = documentSnapshot.security
+                  val inout = documentSnapshot.inout
+                  val attach = documentSnapshot.attach
+                  val shower = documentSnapshot.shower
+                  val parking = documentSnapshot.parking
+                  val mess = documentSnapshot.mess
+                  val tv = documentSnapshot.tv
+                  val gas = documentSnapshot.gas
+                  val dining = documentSnapshot.dining
+                  val refrigerator = documentSnapshot.refrigerator
+                  val sofa = documentSnapshot.sofa
+                  val elevator = documentSnapshot.elevator
+                  val play = documentSnapshot.play
+                  val gym = documentSnapshot.gym
+                  val studyroom = documentSnapshot.studyroom
+                  val kitchen = documentSnapshot.kitchen
+                  val balcony = documentSnapshot.balcony
+                  val indian = documentSnapshot.indian
+                  val western = documentSnapshot.western
+                  val terrace = documentSnapshot.terrace
+                  val furnished = documentSnapshot.furnished
+                  val more = documentSnapshot.more
+                  if (clean == "Yes") {
+                      viewHolder.binding.cleanbotcart.visibility = View.VISIBLE
+                  }
+                  if (ac == "Yes") {
+                      viewHolder.binding.acbotcart.visibility = View.VISIBLE
+                  }
+                  if (rowater == "Yes") {
+                      viewHolder.binding.rowaterbotcart.visibility = View.VISIBLE
+                  }
+                  if (water == "Yes") {
+                      viewHolder.binding.waterbotcart.visibility = View.VISIBLE
+                  }
+                  if (wifi == "Yes") {
+                      viewHolder.binding.wifibotcart.visibility = View.VISIBLE
+                  }
+                  if (cctv == "Yes") {
+                      viewHolder.binding.cctvbotcart.visibility = View.VISIBLE
+                  }
+                  if (bed == "Yes") {
+                      viewHolder.binding.bedbotcart.visibility = View.VISIBLE
+                  }
+                  if (hotwater == "Yes") {
+                      viewHolder.binding.hotwaterbotcart.visibility = View.VISIBLE
+                  }
+                  if (table == "Yes") {
+                      viewHolder.binding.tablebotcart.visibility = View.VISIBLE
+                  }
+                  if (locker == "Yes") {
+                      viewHolder.binding.lockerbotcart.visibility = View.VISIBLE
+                  }
+                  if (fan == "Yes") {
+                      viewHolder.binding.fanbotcart.visibility = View.VISIBLE
+                  }
+                  if (powerbackup == "Yes") {
+                      viewHolder.binding.backupbotcart.visibility = View.VISIBLE
+                  }
+                  if (washing == "Yes") {
+                      viewHolder.binding.washingbotcart.visibility = View.VISIBLE
+                  }
+                  if (security == "Yes") {
+                      viewHolder.binding.securitybotcart.visibility = View.VISIBLE
+                  }
+                  if (inout == "Yes") {
+                      viewHolder.binding.inoutbotcart.visibility = View.VISIBLE
+                  }
+                  if (attach == "Yes") {
+                      viewHolder.binding.attachedbotcart.visibility = View.VISIBLE
+                  }
+                  if (shower == "Yes") {
+                      viewHolder.binding.showerbotcart.visibility = View.VISIBLE
+                  }
+                  if (parking == "Yes") {
+                      viewHolder.binding.parkingbotcart.visibility = View.VISIBLE
+                  }
+                  if (mess == "Yes") {
+                      viewHolder.binding.messbotcart.visibility = View.VISIBLE
+                  }
+                  if (tv == "Yes") {
+                      viewHolder.binding.tvbotcart.visibility = View.VISIBLE
+                  }
+                  if (gas == "Yes") {
+                      viewHolder.binding.gasbotcart.visibility = View.VISIBLE
+                  }
+                  if (dining == "Yes") {
+                      viewHolder.binding.dianingbotcart.visibility = View.VISIBLE
+                  }
+                  if (refrigerator == "Yes") {
+                      viewHolder.binding.refribotcart.visibility = View.VISIBLE
+                  }
+                  if (sofa == "Yes") {
+                      viewHolder.binding.sofabotcart.visibility = View.VISIBLE
+                  }
+                  if (elevator == "Yes") {
+                      viewHolder.binding.elevatorbotcart.visibility = View.VISIBLE
+                  }
+                  if (play == "Yes") {
+                      viewHolder.binding.playbotcart.visibility = View.VISIBLE
+                  }
+                  if (gym == "Yes") {
+                      viewHolder.binding.gymbotcart.visibility = View.VISIBLE
+                  }
+                  if (studyroom == "Yes") {
+                      viewHolder.binding.studeybotcart.visibility = View.VISIBLE
+                  }
+                  if (kitchen == "Yes") {
+                      viewHolder.binding.kitchenbotcart.visibility = View.VISIBLE
+                  }
+                  if (balcony == "Yes") {
+                      viewHolder.binding.balconybotcart.visibility = View.VISIBLE
+                  }
+                  if (indian == "Yes") {
+                      viewHolder.binding.indianbotcart.visibility = View.VISIBLE
+                  }
+                  if (western == "Yes") {
+                      viewHolder.binding.westernbotcart.visibility = View.VISIBLE
+                  }
+                  if (terrace == "Yes") {
+                      viewHolder.binding.terracebotcart.visibility = View.VISIBLE
+                  }
+                  if (furnished == "Yes") {
+                      viewHolder.binding.furnishedbotcart.visibility = View.VISIBLE
+                  }
+              }
+          }
+      }
+    }
+
+    private fun showHostelData(showHostelViewModel: ShowHostelViewModel,  context: AppCompatActivity, viewHolder: HostelViewHolder) {
+      context.lifecycleScope.launchWhenStarted {
+          showHostelViewModel.data.collect{
+              it?.let {documentSnapshot->
+                  val name =documentSnapshot.name
+                  val resitype = documentSnapshot.subtype
+                  val agree = documentSnapshot.period
+                  val address = documentSnapshot.address
+                  val area = documentSnapshot.area
+                  val rent = documentSnapshot.rent
+                  viewHolder.binding.bothsamplename.text = name
+                  viewHolder.binding.bothsampleaddress.text = address
+                  viewHolder.binding.bothsamplearea.text = area
+                  viewHolder.binding.bothsamplesubtype.text = resitype
+                  viewHolder.binding.bothsampleprize.text = rent + "₹/month"
+                  if (agree == 708) {
+                      viewHolder.binding.noagreeview.visibility = View.VISIBLE
+                      viewHolder.binding.yesagreeview.visibility = View.GONE
+                  } else {
+                      viewHolder.binding.noagreeview.visibility = View.GONE
+                      viewHolder.binding.yesagreeview.visibility = View.VISIBLE
+                  }
+              }
+          }
+      }
+
+    }
+
+    private fun showSellData(showSellViewModel: ShowSellViewModel,   context: AppCompatActivity, viewHolder:  SellViewHolder) {
+
+        context.lifecycleScope.launchWhenStarted {
+            showSellViewModel.data.collect { result ->
+                result?.let { documentSnapshot ->
+                    val name = documentSnapshot.name
+                    val resitype = documentSnapshot.subtype
+                    val address = documentSnapshot.address
+                    val area = documentSnapshot.area
+                    val prize = documentSnapshot.prize
+
                     viewHolder.binding.bothsamplename.text = name
                     viewHolder.binding.bothsampleaddress.text = address
                     viewHolder.binding.bothsamplearea.text = area
                     viewHolder.binding.bothsamplesubtype.text = resitype
-                    if (prize!!.isEmpty()) {
+                    if (prize.isEmpty()) {
                         viewHolder.binding.prizeview.visibility = View.GONE
                     } else {
                         viewHolder.binding.bothsampleprize.text = prize + "₹"
                     }
                 }
-            viewHolder.binding.sellcart.setOnClickListener {
-                val intent = Intent(context, ShowSellDataActivity::class.java)
-                intent.putExtra("id", id)
-                context.startActivity(intent)
             }
-            FirebaseFirestore.getInstance().collection("Like")
-                .document(FirebaseAuth.getInstance().uid!!).collection("Nanded").document(id).get()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val document = task.result
-                        if (document.exists()) {
-                            viewHolder.binding.unlike.visibility = View.GONE
-                            viewHolder.binding.like.visibility = View.VISIBLE
-                        } else {
-                            viewHolder.binding.unlike.visibility = View.VISIBLE
-                            viewHolder.binding.like.visibility = View.GONE
-                        }
-                    }
-                }
-            viewHolder.binding.unlike.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.GONE
-                viewHolder.binding.like.visibility = View.VISIBLE
-                val hashMap1 = HashMap<String, Any?>()
-                hashMap1["userid"] = FirebaseAuth.getInstance().uid
-                val date = Date()
-                val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).set(hashMap1).addOnSuccessListener {
-                        FirebaseFirestore.getInstance().collection("Like")
-                            .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                            .document(id).set(likeClass).addOnSuccessListener {
-                                Toast.makeText(
-                                    context,
-                                    "Added to your like list",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-            }
-            viewHolder.binding.like.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.VISIBLE
-                viewHolder.binding.like.visibility = View.GONE
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                    .document(id).delete().addOnCompleteListener {
-                        Toast.makeText(
-                            context,
-                            "Remove from like list",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-            }
-        } else if (viewHolder is HostelViewHolder) {
-             FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllImage").document(id!!).get()
-                .addOnSuccessListener { snapshot ->
-                    val firstimage = snapshot.getString("image0")
-                    Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
-                        .into(viewHolder.binding.bothsampleimage)
-                }
-            FirebaseFirestore.getInstance().collection("Nanded")
-                .document("NandedCity").collection("AllData").document(id).get()
-                .addOnSuccessListener { snapshot ->
-                    val name = snapshot.getString("name")
-                    val resitype = snapshot.getString("subtype")
-                    val area = snapshot.getString("area")
-                    val address = snapshot.getString("address")
-                    val rent = snapshot.getString("rent")
-                    val agree = snapshot.getLong("period")!!.toInt()
+        }
+    }
 
-                    viewHolder.binding.bothsamplename.text = name
-                    viewHolder.binding.bothsampleaddress.text = address
-                    viewHolder.binding.bothsamplearea.text = area
-                    viewHolder.binding.bothsamplesubtype.text = resitype
-                    viewHolder.binding.bothsampleprize.text = rent + "₹/month"
-                    if (agree == 708) {
-                        viewHolder.binding.noagreeview.visibility = View.VISIBLE
-                        viewHolder.binding.yesagreeview.visibility = View.GONE
-                    } else {
-                        viewHolder.binding.noagreeview.visibility = View.GONE
-                        viewHolder.binding.yesagreeview.visibility = View.VISIBLE
-                    }
-                }
-            viewHolder.binding.hostelcart.setOnClickListener {
-                val intent = Intent(context, ShowHostelDataActivity::class.java)
-                intent.putExtra("id", id)
-                context.startActivity(intent)
-            }
-            FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllFacility").document(id).get()
-                .addOnSuccessListener { documentSnapshot ->
-                    val clean = documentSnapshot.getString("clean")
-                    val ac = documentSnapshot.getString("ac")
-                    val rowater = documentSnapshot.getString("rowater")
-                    val water = documentSnapshot.getString("water")
-                    val wifi = documentSnapshot.getString("wifi")
-                    val cctv = documentSnapshot.getString("cctv")
-                    val bed = documentSnapshot.getString("bed")
-                    val hotwater = documentSnapshot.getString("hotwater")
-                    val table = documentSnapshot.getString("table")
-                    val locker = documentSnapshot.getString("locker")
-                    val fan = documentSnapshot.getString("fan")
-                    val powerbackup = documentSnapshot.getString("powerbackup")
-                    val washing = documentSnapshot.getString("washing")
-                    val security = documentSnapshot.getString("security")
-                    val inout = documentSnapshot.getString("inout")
-                    val attach = documentSnapshot.getString("attach")
-                    val shower = documentSnapshot.getString("shower")
-                    val parking = documentSnapshot.getString("parking")
-                    val mess = documentSnapshot.getString("mess")
-                    val tv = documentSnapshot.getString("tv")
-                    val gas = documentSnapshot.getString("gas")
-                    val dining = documentSnapshot.getString("dining")
-                    val refrigerator = documentSnapshot.getString("refrigerator")
-                    val sofa = documentSnapshot.getString("sofa")
-                    val elevator = documentSnapshot.getString("elevator")
-                    val play = documentSnapshot.getString("play")
-                    val gym = documentSnapshot.getString("gym")
-                    val studyroom = documentSnapshot.getString("studyroom")
-                    val kitchen = documentSnapshot.getString("kitchen")
-                    val balcony = documentSnapshot.getString("balcony")
-                    val indian = documentSnapshot.getString("indian")
-                    val western = documentSnapshot.getString("western")
-                    val terrace = documentSnapshot.getString("terrace")
-                    val furnished = documentSnapshot.getString("furnished")
+    private fun showFacilityData(facilityViewModel: FacilityViewModel,   context1: AppCompatActivity, viewHolder: ResiViewHolder) {
+        context1.lifecycleScope.launchWhenStarted {
+            facilityViewModel.data.collect {
+                it?.let { documentSnapshot ->
+                    val clean = documentSnapshot.clean
+                    val ac = documentSnapshot.ac
+                    val rowater = documentSnapshot.rowater
+                    val water = documentSnapshot.water
+                    val wifi = documentSnapshot.wifi
+                    val cctv = documentSnapshot.cctv
+                    val bed = documentSnapshot.bed
+                    val hotwater = documentSnapshot.hotwater
+                    val table = documentSnapshot.table
+                    val locker = documentSnapshot.locker
+                    val fan = documentSnapshot.fan
+                    val powerbackup = documentSnapshot.powerbackup
+                    val washing = documentSnapshot.washing
+                    val security = documentSnapshot.security
+                    val inout = documentSnapshot.inout
+                    val attach = documentSnapshot.attach
+                    val shower = documentSnapshot.shower
+                    val parking = documentSnapshot.parking
+                    val mess = documentSnapshot.mess
+                    val tv = documentSnapshot.tv
+                    val gas = documentSnapshot.gas
+                    val dining = documentSnapshot.dining
+                    val refrigerator = documentSnapshot.refrigerator
+                    val sofa = documentSnapshot.sofa
+                    val elevator = documentSnapshot.elevator
+                    val play = documentSnapshot.play
+                    val gym = documentSnapshot.gym
+                    val studyroom = documentSnapshot.studyroom
+                    val kitchen = documentSnapshot.kitchen
+                    val balcony = documentSnapshot.balcony
+                    val indian = documentSnapshot.indian
+                    val western = documentSnapshot.western
+                    val terrace = documentSnapshot.terrace
+                    val furnished = documentSnapshot.furnished
+                    val more = documentSnapshot.more
                     if (clean == "Yes") {
                         viewHolder.binding.cleanbotcart.visibility = View.VISIBLE
                     }
@@ -548,57 +653,45 @@ class BothResiiAdapter(var list: ArrayList<BothResiClass?>, var context: Context
                     if (furnished == "Yes") {
                         viewHolder.binding.furnishedbotcart.visibility = View.VISIBLE
                     }
-                }.addOnFailureListener { }
-            FirebaseFirestore.getInstance().collection("Like")
-                .document(FirebaseAuth.getInstance().uid!!).collection("Nanded").document(id).get()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val document = task.result
-                        if (document.exists()) {
-                            viewHolder.binding.unlike.visibility = View.GONE
-                            viewHolder.binding.like.visibility = View.VISIBLE
-                        } else {
-                            viewHolder.binding.unlike.visibility = View.VISIBLE
-                            viewHolder.binding.like.visibility = View.GONE
-                        }
-                    }
                 }
-            viewHolder.binding.unlike.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.GONE
-                viewHolder.binding.like.visibility = View.VISIBLE
-                val hashMap1 = HashMap<String, Any?>()
-                hashMap1["userid"] = FirebaseAuth.getInstance().uid
-                val date = Date()
-                val likeClass = LikeClass(id, "Nanded", "", "", 7028, date.time)
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).set(hashMap1).addOnSuccessListener {
-                        FirebaseFirestore.getInstance().collection("Like")
-                            .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                            .document(id).set(likeClass).addOnSuccessListener {
-                                Toast.makeText(
-                                    context,
-                                    "Added to your like list",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-            }
-
-            viewHolder.binding.like.setOnClickListener {
-                viewHolder.binding.unlike.visibility = View.VISIBLE
-                viewHolder.binding.like.visibility = View.GONE
-                FirebaseFirestore.getInstance().collection("Like")
-                    .document(FirebaseAuth.getInstance().uid!!).collection("Nanded")
-                    .document(id).delete().addOnCompleteListener {
-                        Toast.makeText(
-                            context,
-                            "Remove from like list",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
             }
         }
+
+
     }
+
+    private fun showResiData(showResiViewModel: ShowResiViewModel,   context: AppCompatActivity, viewHolder: ResiViewHolder) {
+       context.lifecycleScope.launchWhenStarted {
+           showResiViewModel.data.collect {
+               it?.let { documentSnapshot ->
+
+                   val name = documentSnapshot.name
+
+                   val resitype = documentSnapshot.subtype
+                   val area = documentSnapshot.area
+                   val address = documentSnapshot.address
+
+                   val rent = documentSnapshot.rent
+
+                   val agree = documentSnapshot.period.toInt()
+                   viewHolder.binding.bothsamplename.text = name
+                   viewHolder.binding.bothsampleaddress.text = address
+                   viewHolder.binding.bothsamplearea.text = area
+                   viewHolder.binding.bothsamplesubtype.text = resitype
+                   viewHolder.binding.bothresirenttext.text = rent + "₹/month"
+                   if (agree == 708) {
+                       viewHolder.binding.noagreeview.visibility = View.VISIBLE
+                       viewHolder.binding.yesagreeview.visibility = View.GONE
+                   } else {
+                       viewHolder.binding.noagreeview.visibility = View.GONE
+                       viewHolder.binding.yesagreeview.visibility = View.VISIBLE
+                   }
+               }
+           }
+       }
+
+    }
+
 
 
 

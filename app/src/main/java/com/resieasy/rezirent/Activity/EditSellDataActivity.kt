@@ -13,8 +13,10 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -25,6 +27,8 @@ import com.resieasy.rezirent.Adapter.MultioldImageAdapter
 import com.resieasy.rezirent.Adapter.MultipleImageAdapter
 import com.resieasy.rezirent.Class.SellResiClass
 import com.resieasy.rezirent.R
+import com.resieasy.rezirent.ViewModel.ShowResiViewModel
+import com.resieasy.rezirent.ViewModel.ShowSellViewModel
 import com.resieasy.rezirent.databinding.ActivityEditSellDataBinding
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -33,60 +37,56 @@ import java.util.Date
 import java.util.Locale
 
 class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
-    var binding: ActivityEditSellDataBinding? = null
-    var PICK_IMAGE: Int = 123
-    var policy: String? = null
-    var period: Int = 0
-    var upload_count: Int = 0
-    var inumber: Int = 0
-    lateinit var rentaltype: Array<String>
-    lateinit var areatype: Array<String>
 
-    //String[] rentaltype1={" ","Flat","Room","Hostel/PG","Shutter","House","Building"};
-    private var dialog: ProgressDialog? = null
-    private var dialog1: ProgressDialog? = null
 
-    var oldlist: ArrayList<Uri?> = ArrayList()
-    var newlist: ArrayList<Uri?> = ArrayList()
+    private lateinit var binding: ActivityEditSellDataBinding
+    private val oldlist = ArrayList<Uri?>()
+    private val newlist = ArrayList<Uri?>()
+    private val newStrings = ArrayList<String>()
+    private val oldStrings = ArrayList<String>()
+
+    private lateinit var rentaltype: Array<String>
+    private lateinit var areatype: Array<String>
+    private lateinit var multipleImageAdapter: MultipleImageAdapter
+    private lateinit var multioldImageAdapter: MultioldImageAdapter
+
+    private var PICK_IMAGE = 123
+    private var policy: String = ""
+    private var period = 0
+    private var upload_count = 0
+    private var inumber = 0
+    private var mainum = 0
+
+    private var lat = 0.0
+    private var lan = 0.0
+    private var latitude = 0.0
+    private var longitude = 0.0
+    var oldlatitude :Double? = null
+    var oldlongitude :Double? = null
     var newuri: Uri? = null
     var olduri: Uri? = null
-
-    var lat: Double = 0.0
-    var lan: Double = 0.0
-
-    var mainum: Int = 0
-
-    val newStrings = ArrayList<String>()
-    var oldStrings=ArrayList<String>()
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-    var oldlatitude: Double = 0.0
-    var oldlongitude: Double = 0.0
-
-
-    private val picker: MaterialTimePicker? = null
-    var calendar: Calendar? = null
-    var multipleImageAdapter: MultipleImageAdapter? = null
-    var multioldImageAdapter: MultioldImageAdapter? = null
-    var id: String? = null
-    var type: String? = null
-    var subtype: String? = null
-    var getsubtype: String? = null
+     private var type: String? = null
+    private var subtype: String? = null
+    private var getsubtype: String? = null
+    private var name: String = ""
+    private var status: String? = null
     var item: Any? = null
     var item2: Any? = null
-    var name: String? = null
-    var status: String? = null
+    private val showSellViewModel: ShowSellViewModel by viewModels()
 
-
+    private var dialog: ProgressDialog? = null
+    private var dialog1: ProgressDialog? = null
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditSellDataBinding.inflate(
             layoutInflater
         )
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
 
-        id = intent.getStringExtra("id")
+      val  id = intent.getStringExtra("id") ?: ""
+     val currentUserId=FirebaseAuth.getInstance().uid
 
 
 
@@ -105,8 +105,8 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             android.R.layout.simple_spinner_item
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.rentaltype.adapter = adapter
-        binding!!.rentaltype.onItemSelectedListener =
+        binding.rentaltype.adapter = adapter
+        binding.rentaltype.onItemSelectedListener =
             this@EditSellDataActivity
 
         val adapter1 = ArrayAdapter.createFromResource(
@@ -115,125 +115,123 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             android.R.layout.simple_spinner_item
         )
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding!!.areatype.adapter = adapter1
-        binding!!.areatype.onItemSelectedListener =
+        binding.areatype.adapter = adapter1
+        binding.areatype.onItemSelectedListener =
             this@EditSellDataActivity
 
 
         multipleImageAdapter = MultipleImageAdapter(newlist)
-        binding!!.multiimagerec.layoutManager =
+        binding.multiimagerec.layoutManager =
             GridLayoutManager(this@EditSellDataActivity, 3)
-        binding!!.multiimagerec.adapter = multipleImageAdapter
+        binding.multiimagerec.adapter = multipleImageAdapter
 
         multioldImageAdapter = MultioldImageAdapter(oldlist)
-        binding!!.multiimagerec2.layoutManager =
+        binding.multiimagerec2.layoutManager =
             GridLayoutManager(this@EditSellDataActivity, 3)
-        binding!!.multiimagerec2.adapter = multioldImageAdapter
+        binding.multiimagerec2.adapter = multioldImageAdapter
 
 
 
 
 
 
-        FirebaseFirestore.getInstance().collection("Nanded")
-            .document("NandedCity").collection("AllData").document(id!!).get()
-            .addOnSuccessListener { documentSnapshot ->
-                inumber = documentSnapshot.getLong("in")!!.toInt()
-                oldlatitude = documentSnapshot.getDouble("latitude")!!
-                oldlongitude = documentSnapshot.getDouble("longitude")!!
+        showSellViewModel.getSellData(id)
+        lifecycleScope.launchWhenStarted {
+            showSellViewModel.data.collect {
+                it?.let { documentSnapshot->
+                    inumber = documentSnapshot.input
+                    oldlatitude = documentSnapshot.latitude
+                    oldlongitude = documentSnapshot.longitude
 
-                val gettype = documentSnapshot.getString("type")
+                    val type = documentSnapshot.type
 
-                val idd = documentSnapshot.getString("id")
-                getsubtype = documentSnapshot.getString("subtype")
-                val area = documentSnapshot.getString("area")
-                name = documentSnapshot.getString("name")
-                status = documentSnapshot.getString("status")
-                val address = documentSnapshot.getString("address")
-                val oname = documentSnapshot.getString("oname")
-                val number = documentSnapshot.getString("number")
-                val whatsapp = documentSnapshot.getString("whatsapp")
-                val mail = documentSnapshot.getString("mail")
-                val prize = documentSnapshot.getString("prize")
-                val eprize = documentSnapshot.getString("eprize")
-                val more = documentSnapshot.getString("more")
-                val size = documentSnapshot.getString("size")
+                    val idd = documentSnapshot.id
+                    subtype = documentSnapshot.subtype
+                    val area = documentSnapshot.area
+                    name = documentSnapshot.name
+                    status = documentSnapshot.status
+                    val address = documentSnapshot.address
+                    val oname = documentSnapshot.oname
+                    val number = documentSnapshot.number
+                    val whatsapp = documentSnapshot.whatsapp
+                    val mail = documentSnapshot.mail
+                    val prize = documentSnapshot.prize
+                    val eprize = documentSnapshot.eprize
+                    val more = documentSnapshot.more
+                    val size = documentSnapshot.size
 
 
 
-                binding!!.viewresitypetext.text = gettype
-                binding!!.vieareatext.text = area
-                binding!!.resiaddress.setText(address)
-                binding!!.resiname.setText(name)
-                binding!!.oname.setText(oname)
-                binding!!.contact.setText(number)
-                binding!!.whatsapp.setText(whatsapp)
-                binding!!.email.setText(mail)
-                binding!!.prizeamount.setText(prize)
-                binding!!.explainprize.setText(eprize)
-                binding!!.propertysize.setText(size)
-                binding!!.moredetails.setText(more)
+                    binding.viewresitypetext.text = type
+                    binding.vieareatext.text = area
+                    binding.resiaddress.setText(address)
+                    binding.resiname.setText(name)
+                    binding.oname.setText(oname)
+                    binding.contact.setText(number)
+                    binding.whatsapp.setText(whatsapp)
+                    binding.email.setText(mail)
+                    binding.prizeamount.setText(prize)
+                    binding.explainprize.setText(eprize)
+                    binding.propertysize.setText(size)
+                    binding.moredetails.setText(more)
 
-                binding!!.olshowlocationtext.text = "Latitude $oldlatitude And $oldlongitude"
+                    binding.olshowlocationtext.text = "Latitude $oldlatitude And $oldlongitude"
 
-                FirebaseFirestore.getInstance().collection("Nanded")
-                    .document("NandedCity").collection("AllImage").document(idd!!).get()
-                    .addOnSuccessListener { snapshot ->
-                        for (i in 0 until inumber) {
-                            val immm = snapshot.getString("image$i")
+                    FirebaseFirestore.getInstance().collection("Nanded")
+                        .document("NandedCity").collection("AllImage").document(idd!!).get()
+                        .addOnSuccessListener { snapshot ->
+                            for (i in 0 until inumber) {
+                                val immm = snapshot.getString("image$i")
 
-                            olduri = Uri.parse(snapshot.getString("image$i"))
-                            oldlist.add(olduri)
-                            if (immm != null) {
-                                oldStrings.add(immm)
+                                olduri = Uri.parse(snapshot.getString("image$i"))
+                                oldlist.add(olduri)
+                                if (immm != null) {
+                                    oldStrings.add(immm)
+                                }
                             }
+                            multioldImageAdapter!!.notifyDataSetChanged()
+                            binding.numbertext.text = "You have select " + oldlist.size + " images"
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(
+                                this@EditSellDataActivity,
+                                e.message,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        multioldImageAdapter!!.notifyDataSetChanged()
-                        binding!!.numbertext.text = "You have select " + oldlist.size + " images"
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(
-                            this@EditSellDataActivity,
-                            e.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                if (gettype == "Flat") {
-                    binding!!.flatview1.visibility = View.VISIBLE
-                    binding!!.roomview1.visibility = View.GONE
-                    if (getsubtype == "1RK") {
-                        binding!!.rk1.isChecked = true
-                    }
-                    if (getsubtype == "1BHK") {
-                        binding!!.bhk1.isChecked = true
-                    }
-                    if (getsubtype == "2BHK") {
-                        binding!!.bhk2.isChecked = true
-                    }
-                    if (getsubtype == "3BHK") {
-                        binding!!.bhk3.isChecked = true
-                    }
-                } else if (gettype == "Room") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.VISIBLE
-                    if (getsubtype == "Single Room") {
-                        binding!!.singleroom1.isChecked = true
-                    }
-                    if (getsubtype == "Double Room") {
-                        binding!!.doubleroom1.isChecked = true
-                    }
-                    if (getsubtype == "Triple Room") {
-                        binding!!.tripleroom1.isChecked = true
+                    if (type == "Flat") {
+                        binding.flatview1.visibility = View.VISIBLE
+                        binding.roomview1.visibility = View.GONE
+                        if (getsubtype == "1RK") {
+                            binding.rk1.isChecked = true
+                        }
+                        if (getsubtype == "1BHK") {
+                            binding.bhk1.isChecked = true
+                        }
+                        if (getsubtype == "2BHK") {
+                            binding.bhk2.isChecked = true
+                        }
+                        if (getsubtype == "3BHK") {
+                            binding.bhk3.isChecked = true
+                        }
+                    } else if (type == "Room") {
+                        binding.flatview1.visibility = View.GONE
+                        binding.roomview1.visibility = View.VISIBLE
+                        if (getsubtype == "Single Room") {
+                            binding.singleroom1.isChecked = true
+                        }
+                        if (getsubtype == "Double Room") {
+                            binding.doubleroom1.isChecked = true
+                        }
+                        if (getsubtype == "Triple Room") {
+                            binding.tripleroom1.isChecked = true
+                        }
                     }
                 }
-            }.addOnFailureListener { e ->
-                Toast.makeText(
-                    this@EditSellDataActivity,
-                    e.message,
-                    Toast.LENGTH_SHORT
-                ).show()
             }
+        }
 
-        binding!!.rentaltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+        binding.rentaltype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
                 view: View,
@@ -242,45 +240,45 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             ) {
                 item = parent.getItemAtPosition(position)
                 if (item.toString() == "Flat") {
-                    binding!!.flatview1.visibility = View.VISIBLE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
+                    binding.flatview1.visibility = View.VISIBLE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
 
-                    binding!!.viewresitypetext.text = "Flat"
+                    binding.viewresitypetext.text = "Flat"
                 } else if (item.toString() == "Room") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.VISIBLE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Room"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.VISIBLE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Room"
                 } else if (item.toString() == "Stutter") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Shutter"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Shutter"
                 } else if (item.toString() == "House") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "House"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "House"
                 } else if (item.toString() == "Building") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Building"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Building"
                 } else if (item.toString() == "Land") {
-                    binding!!.flatview1.visibility = View.GONE
-                    binding!!.roomview1.visibility = View.GONE
-                    binding!!.viewresitypetext.visibility = View.GONE
-                    binding!!.viewresitypetext.text = "Land"
+                    binding.flatview1.visibility = View.GONE
+                    binding.roomview1.visibility = View.GONE
+                    binding.viewresitypetext.visibility = View.GONE
+                    binding.viewresitypetext.text = "Land"
                 } else if (item.toString() == "") {
-                    binding!!.viewresitypetext.visibility = View.VISIBLE
+                    binding.viewresitypetext.visibility = View.VISIBLE
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
-        binding!!.areatype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.areatype.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
                 view: View,
@@ -289,146 +287,146 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             ) {
                 item2 = parent.getItemAtPosition(position)
                 if (item2.toString() == "Anand Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Anand Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Anand Nagar"
                 } else if (item2.toString() == "Asarjan") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Asarjan"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Asarjan"
                 } else if (item2.toString() == "Ashok Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ashok Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ashok Nagar"
                 } else if (item2.toString() == "Baba Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Baba Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Baba Nagar"
                 } else if (item2.toString() == "Bafna") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Bafna"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Bafna"
                 } else if (item2.toString() == "Balirampur") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Balirampur"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Balirampur"
                 } else if (item2.toString() == "Bhagya Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Bhagya Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Bhagya Nagar"
                 } else if (item2.toString() == "Chaitanya Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Chaitanya Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Chaitanya Nagar"
                 } else if (item2.toString() == "Chaufula") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Chaufula"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Chaufula"
                 } else if (item2.toString() == "CIDCO") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "CIDCO"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "CIDCO"
                 } else if (item2.toString() == "Dhanegaon") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Dhanegaon"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Dhanegaon"
                 } else if (item2.toString() == "Farande Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Farande Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Farande Nagar"
                 } else if (item2.toString() == "Ganesh Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ganesh Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ganesh Nagar"
                 } else if (item2.toString() == "Gopalchiwadi") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Gopalchiwadi"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Gopalchiwadi"
                 } else if (item2.toString() == "Hanuman Gad") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hanuman Gad"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hanuman Gad"
                 } else if (item2.toString() == "Harsh Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Harsh Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Harsh Nagar"
                 } else if (item2.toString() == "Hingoli Gate") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hingoli Gate"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hingoli Gate"
                 } else if (item2.toString() == "HUDCO") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "HUDCO"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "HUDCO"
                 } else if (item2.toString() == "Hyder Bagh") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Hyder Bagh"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Hyder Bagh"
                 } else if (item2.toString() == "Itwara") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Itwara"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Itwara"
                 } else if (item2.toString() == "Kabra Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kabra Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kabra Nagar"
                 } else if (item2.toString() == "Kala Mandir") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kala Mandir"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kala Mandir"
                 } else if (item2.toString() == "Kamtha Village") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kamtha Village"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kamtha Village"
                 } else if (item2.toString() == "Kautha") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kautha"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kautha"
                 } else if (item2.toString() == "Kautha(New)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Kautha(New)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Kautha(New)"
                 } else if (item2.toString() == "Khadkpura") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Khadkpura"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Khadkpura"
                 } else if (item2.toString() == "Labour Colony") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Labour Colony"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Labour Colony"
                 } else if (item2.toString() == "Lokmitra Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Lokmitra Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Lokmitra Nagar"
                 } else if (item2.toString() == "MIDC") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "MIDC"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "MIDC"
                 } else if (item2.toString() == "Mondha(New)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mondha(New)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mondha(New)"
                 } else if (item2.toString() == "Mondha(Old)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mondha(Old)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mondha(Old)"
                 } else if (item2.toString() == "Mujampeth") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Mujampeth"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Mujampeth"
                 } else if (item2.toString() == "Peer Burhan Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Peer Burhan Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Peer Burhan Nagar"
                 } else if (item2.toString() == "Ravi Nagar(Kautha)") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Ravi Nagar(Kautha)"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Ravi Nagar(Kautha)"
                 } else if (item2.toString() == "Sarafa") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Sarafa"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Sarafa"
                 } else if (item2.toString() == "Shahu Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shahu Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shahu Nagar"
                 } else if (item2.toString() == "Shivaji Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shivaji Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shivaji Nagar"
                 } else if (item2.toString() == "Shrawasti Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shrawasti Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shrawasti Nagar"
                 } else if (item2.toString() == "Shri Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shri Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shri Nagar"
                 } else if (item2.toString() == "Shyam Nagar") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Shyam Nagar"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Shyam Nagar"
                 } else if (item2.toString() == "Taroda bk") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Taroda bk"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Taroda bk"
                 } else if (item2.toString() == "Taroda kh") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Taroda kh"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Taroda kh"
                 } else if (item2.toString() == "Vadibudruk") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vadibudruk"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vadibudruk"
                 } else if (item2.toString() == "Vajirabad") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vajirabad"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vajirabad"
                 } else if (item2.toString() == "Vasarani") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vasarani"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vasarani"
                 } else if (item2.toString() == "Vishnupuri") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Vishnupuri"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Vishnupuri"
                 } else if (item2.toString() == "Wajegaon") {
-                    binding!!.vieareatext.visibility = View.GONE
-                    binding!!.vieareatext.text = "Wajegaon"
+                    binding.vieareatext.visibility = View.GONE
+                    binding.vieareatext.text = "Wajegaon"
                 }
             }
 
@@ -438,14 +436,14 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
 
 
 
-        binding!!.submitresibtn.setOnClickListener {
+        binding.submitresibtn.setOnClickListener {
             dialog!!.show()
-            val type = binding!!.rentaltype.selectedItem.toString()
+            val type = binding.rentaltype.selectedItem.toString()
 
 
             if (type == "Flat") {
-                binding!!.flatview1.visibility = View.VISIBLE
-                val ID01 = binding!!.flatview1.checkedRadioButtonId
+                binding.flatview1.visibility = View.VISIBLE
+                val ID01 = binding.flatview1.checkedRadioButtonId
                 val radioButton01 = findViewById<RadioButton>(ID01)
 
                 if (radioButton01.text == "1RK") {
@@ -467,8 +465,8 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                     subtype = "5BHK"
                 }
             } else if (type == "Room") {
-                binding!!.roomview1.visibility = View.VISIBLE
-                val ID02 = binding!!.roomview1.checkedRadioButtonId
+                binding.roomview1.visibility = View.VISIBLE
+                val ID02 = binding.roomview1.checkedRadioButtonId
                 val radioButton02 = findViewById<RadioButton>(ID02)
 
                 if (radioButton02.text == "Single Room") {
@@ -489,9 +487,9 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             } else if (type == "Land") {
                 subtype = "Land"
             } else if (type == "") {
-                val ttypee = binding!!.viewresitypetext.text.toString()
+                val ttypee = binding.viewresitypetext.text.toString()
                 if (ttypee == "Flat") {
-                    val ID01 = binding!!.flatview1.checkedRadioButtonId
+                    val ID01 = binding.flatview1.checkedRadioButtonId
                     val radioButton01 = findViewById<RadioButton>(ID01)
 
                     if (radioButton01.text == "1RK") {
@@ -513,7 +511,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                         subtype = "5BHK"
                     }
                 } else if (ttypee == "Room") {
-                    val ID02 = binding!!.roomview1.checkedRadioButtonId
+                    val ID02 = binding.roomview1.checkedRadioButtonId
                     val radioButton02 = findViewById<RadioButton>(ID02)
 
                     if (radioButton02.text == "Single Room") {
@@ -539,11 +537,11 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             }
 
 
-            val nametext = binding!!.resiname.text.toString()
-            val addresstext = binding!!.resiaddress.text.toString()
-            val onametext = binding!!.oname.text.toString()
-            val contacttext = binding!!.contact.text.toString()
-            val whatsapptext = binding!!.whatsapp.text.toString()
+            val nametext = binding.resiname.text.toString()
+            val addresstext = binding.resiaddress.text.toString()
+            val onametext = binding.oname.text.toString()
+            val contacttext = binding.contact.text.toString()
+            val whatsapptext = binding.whatsapp.text.toString()
             if (!nametext.isEmpty() && !addresstext.isEmpty() && !onametext.isEmpty() && !contacttext.isEmpty() && !whatsapptext.isEmpty()) {
                 if (newlist.isEmpty() && oldlist.isEmpty()) {
                     dialog!!.dismiss()
@@ -557,7 +555,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                         mainum = newlist.size
                         val ImageFolder = FirebaseStorage.getInstance().reference
                             .child("Nanded")
-                            .child(FirebaseAuth.getInstance().uid!!)
+                            .child(currentUserId!!)
                             .child("SellImage")
 
                         upload_count = 0
@@ -619,7 +617,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                         mainum = combine
                         val ImageFolder = FirebaseStorage.getInstance().reference
                             .child("Nanded")
-                            .child(FirebaseAuth.getInstance().uid!!)
+                            .child(currentUserId!!)
                             .child("SellImage")
 
                         upload_count = 0
@@ -669,7 +667,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 if (nametext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.resiname.error = "Please enter residency name"
+                    binding.resiname.error = "Please enter residency name"
                     Toast.makeText(
                         this@EditSellDataActivity,
                         "Please enter residency name",
@@ -679,7 +677,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 if (addresstext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.resiaddress.error = "Please enter residency address"
+                    binding.resiaddress.error = "Please enter residency address"
                     Toast.makeText(
                         this@EditSellDataActivity,
                         "Please enter residency address",
@@ -689,7 +687,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 if (onametext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.oname.error = "Please enter residency operator name"
+                    binding.oname.error = "Please enter residency operator name"
                     Toast.makeText(
                         this@EditSellDataActivity,
                         "Please enter residency operator name",
@@ -699,7 +697,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 if (contacttext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.contact.error = "Please enter contact number"
+                    binding.contact.error = "Please enter contact number"
                     Toast.makeText(
                         this@EditSellDataActivity,
                         "Please enter contact number",
@@ -709,7 +707,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 if (whatsapptext.isEmpty()) {
                     dialog!!.dismiss()
 
-                    binding!!.whatsapp.error = "Please enter whatsapp number"
+                    binding.whatsapp.error = "Please enter whatsapp number"
                     Toast.makeText(
                         this@EditSellDataActivity,
                         "Please enter whatsapp number",
@@ -723,26 +721,26 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
 
 
 
-        binding!!.opengallerybtn2.setOnClickListener {
+        binding.opengallerybtn2.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.setType("image/*")
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             startActivityForResult(intent, PICK_IMAGE)
-            binding!!.cureentimageview.visibility = View.VISIBLE
+            binding.cureentimageview.visibility = View.VISIBLE
         }
-        binding!!.capturelocation2.setOnClickListener {
+        binding.capturelocation2.setOnClickListener {
             checkpermission()
             dialog1!!.show()
         }
-        binding!!.back.setOnClickListener { finish() }
-        binding!!.mapview.setOnClickListener {
+        binding.back.setOnClickListener { finish() }
+        binding.mapview.setOnClickListener {
             val intent = Intent(this@EditSellDataActivity, MapsActivity::class.java)
             intent.putExtra("latitude", latitude)
             intent.putExtra("longitude", longitude)
             intent.putExtra("name", "Your residency name will fetch here")
             startActivity(intent)
         }
-        binding!!.olmapview.setOnClickListener {
+        binding.olmapview.setOnClickListener {
             val intent = Intent(this@EditSellDataActivity, MapsActivity::class.java)
             intent.putExtra("latitude", oldlatitude)
             intent.putExtra("longitude", oldlongitude)
@@ -769,24 +767,24 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             i++
         }
 
-        val name = binding!!.resiname.text.toString()
-        val address = binding!!.resiaddress.text.toString()
-        val oname = binding!!.oname.text.toString()
-        val contact = binding!!.contact.text.toString()
-        val whatsapp = binding!!.whatsapp.text.toString()
-        val mail = binding!!.email.text.toString()
-        val prize = binding!!.prizeamount.text.toString()
-        val eprize = binding!!.explainprize.text.toString()
-        val size = binding!!.propertysize.text.toString()
-        val more = binding!!.moredetails.text.toString()
-        val ltype = binding!!.viewresitypetext.text.toString()
-        val larea = binding!!.vieareatext.text.toString()
+        val name = binding.resiname.text.toString()
+        val address = binding.resiaddress.text.toString()
+        val oname = binding.oname.text.toString()
+        val contact = binding.contact.text.toString()
+        val whatsapp = binding.whatsapp.text.toString()
+        val mail = binding.email.text.toString()
+        val prize = binding.prizeamount.text.toString()
+        val eprize = binding.explainprize.text.toString()
+        val size = binding.propertysize.text.toString()
+        val more = binding.moredetails.text.toString()
+        val ltype = binding.viewresitypetext.text.toString()
+        val larea = binding.vieareatext.text.toString()
 
 
 
-        if (binding!!.showlocationtext.text.toString().isEmpty()) {
-            lat = oldlatitude
-            lan = oldlongitude
+        if (binding.showlocationtext.text.toString().isEmpty()) {
+            lat = oldlatitude!!
+            lan = oldlongitude!!
         } else {
             lat = latitude
             lan = longitude
@@ -798,7 +796,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
         val toolsCollectionRef2 = FirebaseFirestore.getInstance().collection("Nanded")
             .document("NandedCity").collection("AllData")
 
-        toolsCollectionRef.document(id!!).set(hashMap).addOnSuccessListener {
+        toolsCollectionRef.document(iddd!!).set(hashMap).addOnSuccessListener {
             val date = Date()
             val data = SellResiClass(
                 status,
@@ -828,7 +826,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 lan,
                 date.time
             )
-            toolsCollectionRef2.document(id!!).set(data)
+            toolsCollectionRef2.document(iddd).set(data)
                 .addOnSuccessListener {
                     dialog!!.dismiss()
                     Toast.makeText(
@@ -856,7 +854,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
         }
 
         dialog!!.dismiss()
-        binding!!.numbertext.text = "Uploaded Successfully"
+        binding.numbertext.text = "Uploaded Successfully"
 
         newlist.clear()
     }
@@ -876,7 +874,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                             newlist.add(newuri)
                         }
                         multipleImageAdapter!!.notifyDataSetChanged()
-                        binding!!.numbertext.text = "You have select " + newlist.size + " images"
+                        binding.numbertext.text = "You have select " + newlist.size + " images"
                     }
                 }
             }
@@ -927,7 +925,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                 fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener { location ->
                 if (location != null) {
-                    binding!!.locationview.visibility = View.VISIBLE
+                    binding.locationview.visibility = View.VISIBLE
                     dialog1!!.dismiss()
                     Toast.makeText(
                         this@EditSellDataActivity,
@@ -936,7 +934,7 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
                     ).show()
                     latitude = location.latitude
                     longitude = location.longitude
-                    binding!!.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
+                    binding.showlocationtext.text = "Latitude: $latitude & Longitude: $longitude"
 
 
                     //LatLng usercl = new LatLng(latitude, longitude);
@@ -962,7 +960,9 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             }
         }
     }
-
+    private fun toast(s: String) {
+        Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
+    }
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
         val rentaltype = parent.getItemAtPosition(position).toString()
         val areatype = parent.getItemAtPosition(position).toString()

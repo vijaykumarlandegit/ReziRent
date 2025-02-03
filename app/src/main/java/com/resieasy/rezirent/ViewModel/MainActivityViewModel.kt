@@ -32,7 +32,8 @@ class MainActivityViewModel @Inject constructor(private val repository: MainActi
                 _hostelPG.postValue(emptyList())
             }
         }
-    }  private val _rent=MutableLiveData<List<AddFlatClass>>()
+    }
+    private val _rent=MutableLiveData<List<AddFlatClass>>()
     val rent:LiveData<List<AddFlatClass>>get() = _rent
 
     fun loadRent(){

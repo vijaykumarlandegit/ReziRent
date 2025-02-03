@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -20,188 +22,135 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.resieasy.rezirent.Class.UsersClass
+import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.ActivitySignInBinding
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
+import java.util.concurrent.TimeUnit
 
 class SignInActivity : AppCompatActivity() {
-    var binding: ActivitySignInBinding? = null
-    var auth: FirebaseAuth? = null
-    var mAuth: FirebaseAuth? = null
-    var RC_SIGN_IN: Int = 100
-    var personName: String? = null
-    var personEmail: String? = null
-    var personalNumber: String? = null
-    var personPhoto: Uri? = null
-    var image1: String? = null
 
-    var progressDialog: ProgressDialog? = null
-    var progressDialog2: ProgressDialog? = null
-    var progressDialog3: ProgressDialog? = null
+    private lateinit var binding: ActivitySignInBinding
+    private lateinit var auth: FirebaseAuth
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var progressDialog: ProgressBar
 
-    var googleSignInClient: GoogleSignInClient? = null
-    var sreference: StorageReference? = null
-    var storage: FirebaseStorage? = null
-    var database: FirebaseDatabase? = null
-    var dreference: DatabaseReference? = null
+    private var personEmail: String? = null
+    private var personPhoto: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignInBinding.inflate(layoutInflater)
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
-        mAuth = FirebaseAuth.getInstance()
-        storage = FirebaseStorage.getInstance()
-        database = FirebaseDatabase.getInstance()
-
-        progressDialog = ProgressDialog(this)
-        progressDialog!!.setTitle("Creating Account")
-        progressDialog!!.setMessage("Please wait, we are creating your account for ResiEasy .....")
-        progressDialog!!.setCancelable(false)
-        progressDialog2 = ProgressDialog(this)
-        progressDialog2!!.setTitle("Fetching Your Account .....")
-        progressDialog2!!.setCancelable(false)
-        progressDialog3 = ProgressDialog(this)
-        progressDialog3!!.setTitle("Please wait .....")
-        progressDialog3!!.setCancelable(false)
-
-        image1 =
-            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-
+        progressDialog = findViewById(R.id.progressBar)
 
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("825775877561-fhd25aj13btnph23ojcvmf2gipgimtg7.apps.googleusercontent.com")
             .requestEmail()
             .build()
 
-        // Initialize sign in client
-        googleSignInClient = GoogleSignIn.getClient(this@SignInActivity, googleSignInOptions)
+        googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
-
-        binding!!.googlesigninbutton.setOnClickListener {
-            progressDialog2!!.show()
-            val signInIntent = googleSignInClient!!.signInIntent
+        binding.googlesigninbutton.setOnClickListener {
+            progressDialog.visibility = View.VISIBLE
+            val signInIntent = googleSignInClient.signInIntent
             startActivityForResult(signInIntent, 123)
         }
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 123) {
-            progressDialog2!!.dismiss()
-
-            progressDialog!!.show()
-
+            progressDialog.visibility = View.GONE
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                Log.d("TAG", "firebaseAuthWithGoogle:" + account.id)
-                firebaseAuthWithGoogle(account.idToken)
+                account?.idToken?.let { firebaseAuthWithGoogle(it) }
             } catch (e: ApiException) {
-                progressDialog2!!.dismiss()
                 Log.w("TAG", "Google sign in failed", e)
             }
         }
     }
 
-
-    private fun firebaseAuthWithGoogle(idToken: String?) {
+    private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth!!.signInWithCredential(credential)
-            .addOnCompleteListener(
-                this
-            ) { task ->
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("TAG", "signInWithCredential:success")
-                    val user = auth!!.currentUser
-                    val acct =
-                        GoogleSignIn.getLastSignedInAccount(this@SignInActivity)
-                    if (acct != null) {
-                        personName = user!!.displayName
-                        personEmail = user.email
-                        personalNumber = user.phoneNumber
-                        personPhoto = acct.photoUrl
+                    val user = auth.currentUser
+                    val acct = GoogleSignIn.getLastSignedInAccount(this)
+                    acct?.let {
+                        personEmail = user?.email
+                        personPhoto = it.photoUrl
 
-
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                            val tokenn = task.result
-                            FirebaseFirestore.getInstance().collection("AllUser").document(
-                                FirebaseAuth.getInstance().uid!!
-                            )
-                                .get().addOnCompleteListener { task ->
-                                    val document = task.result
-                                    if (document.exists()) {
-                                        val hashMap =
-                                            HashMap<String, Any?>()
-                                        hashMap["token"] = tokenn
-                                        FirebaseFirestore.getInstance().collection("AllUser")
-                                            .document(
-                                                FirebaseAuth.getInstance().uid!!
-                                            )
-                                            .update(hashMap).addOnSuccessListener {
-                                                val intent =
-                                                    Intent(
-                                                        this@SignInActivity,
-                                                        MainActivity::class.java
-                                                    )
-                                                progressDialog!!.dismiss()
-                                                Toast.makeText(
-                                                    this@SignInActivity,
-                                                    "Sign-In Successfully, Welcome To ResiEasy",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                                startActivity(intent)
-                                                finishAffinity()
-                                            }
-                                    } else {
-                                        val userClass = UsersClass(
-                                            "",
-                                            personEmail,
-                                            "",
-                                            "Nanded",
-                                            tokenn,
-                                            FirebaseAuth.getInstance().uid,
-                                            "",
-                                            "",
-                                            7028
-                                        )
-
-                                        FirebaseFirestore.getInstance().collection("AllUser")
-                                            .document(
-                                                FirebaseAuth.getInstance().uid!!
-                                            )
-                                            .set(userClass).addOnSuccessListener {
-                                                progressDialog!!.dismiss()
-                                                Toast.makeText(
-                                                    this@SignInActivity,
-                                                    "Your Account Is Created",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                                Toast.makeText(
-                                                    this@SignInActivity,
-                                                    "Welcome To ResiEasy",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-
-                                                val intent =
-                                                    Intent(
-                                                        this@SignInActivity,
-                                                        GetNameNumberActivity::class.java
-                                                    )
-                                                startActivity(intent)
-                                                finishAffinity()
-                                            }
-                                    }
-                                }
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
+                            val token = tokenTask.result
+                            saveUserToFirestore(token)
                         }
                     }
                 } else {
-                    progressDialog!!.dismiss()
-
                     Log.w("TAG", "signInWithCredential:failure", task.exception)
                 }
             }
     }
+
+    private fun saveUserToFirestore(token: String?) {
+        val userId = auth.uid ?: return
+
+        FirebaseFirestore.getInstance().collection("AllUser").document(userId).get()
+            .addOnCompleteListener { task ->
+                val document = task.result
+                if (document.exists()) {
+                    FirebaseFirestore.getInstance().collection("AllUser")
+                        .document(userId)
+                        .update(mapOf("token" to token))
+                        .addOnSuccessListener { navigateToMain() }
+                } else {
+                    val userClass = UsersClass(
+                        "", personEmail, "", "Nanded", token, userId, "", "", 7028
+                    )
+                    FirebaseFirestore.getInstance().collection("AllUser")
+                        .document(userId)
+                        .set(userClass)
+                        .addOnSuccessListener { navigateToGetNameNumber() }
+                }
+            }
+    }
+
+    private fun navigateToMain() {
+        Completable.timer(1, TimeUnit.SECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                startActivity(Intent(this, MainActivity::class.java))
+                finishAffinity()
+            }
+    }
+
+    private fun navigateToGetNameNumber() {
+        Completable.timer(1, TimeUnit.SECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                startActivity(Intent(this, GetNameNumberActivity::class.java))
+                finishAffinity()
+            }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("personEmail", personEmail)
+        outState.putParcelable("personPhoto", personPhoto)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        personEmail = savedInstanceState.getString("personEmail")
+        personPhoto = savedInstanceState.getParcelable("personPhoto")
+    }
+
+
 }
 
 

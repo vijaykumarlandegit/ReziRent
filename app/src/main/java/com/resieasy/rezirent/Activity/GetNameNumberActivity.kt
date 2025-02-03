@@ -10,41 +10,32 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.databinding.ActivityGetNameNumberBinding
 
 class GetNameNumberActivity : AppCompatActivity() {
-    var binding: ActivityGetNameNumberBinding? = null
+   lateinit var binding: ActivityGetNameNumberBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityGetNameNumberBinding.inflate(
-            layoutInflater
-        )
-        setContentView(binding!!.root)
+        binding = ActivityGetNameNumberBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Uploading . . . .")
         progressDialog.setCancelable(false)
 
 
-        binding!!.skipbutton.setOnClickListener {
+        binding.skipbutton.setOnClickListener {
             val intent = Intent(this@GetNameNumberActivity, MainActivity::class.java)
             startActivity(intent)
             finishAffinity()
         }
-        binding!!.userupdatebtn.setOnClickListener {
+        binding.userupdatebtn.setOnClickListener {
             progressDialog.show()
-            val name = binding!!.username.text.toString()
-            val number = binding!!.usernumber.text.toString()
+            val name = binding.username.text.toString()
+            val number = binding.usernumber.text.toString()
             FirebaseFirestore.getInstance().collection("AllUser")
                 .document(FirebaseAuth.getInstance().uid!!)
                 .update("name", name, "number", number).addOnSuccessListener {
-                    Toast.makeText(
-                        this@GetNameNumberActivity,
-                        "Submited Successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    val intent = Intent(
-                        this@GetNameNumberActivity,
-                        MainActivity::class.java
-                    )
+                    Toast.makeText(this@GetNameNumberActivity, "Submited Successfully", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@GetNameNumberActivity, MainActivity::class.java)
                     progressDialog.show()
                     startActivity(intent)
                     finishAffinity()

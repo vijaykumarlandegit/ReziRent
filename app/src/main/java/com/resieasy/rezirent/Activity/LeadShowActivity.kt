@@ -13,10 +13,11 @@ import com.resieasy.rezirent.Class.LeadClass
 import com.resieasy.rezirent.databinding.ActivityLeadShowBinding
 
 class LeadShowActivity : AppCompatActivity() {
-    var binding: ActivityLeadShowBinding? = null
-    var leadsAdapter: LeadsAdapter? = null
-    var list: ArrayList<LeadClass?>? = null
-    var count: String? = null
+   
+    private lateinit var binding: ActivityLeadShowBinding
+    private lateinit var leadsAdapter: LeadsAdapter
+    private val list = ArrayList<LeadClass>()
+    private var count: String = "0"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,44 +25,41 @@ class LeadShowActivity : AppCompatActivity() {
 
 
 
-        setContentView(binding!!.root)
-        list = ArrayList()
-        leadsAdapter = LeadsAdapter(this, list!!)
-        binding!!.leadsrec.adapter = leadsAdapter
+        setContentView(binding.root)
+         leadsAdapter = LeadsAdapter(this, list)
+        binding.leadsrec.adapter = leadsAdapter
         val layoutManager = LinearLayoutManager(this)
-        binding!!.leadsrec.layoutManager = layoutManager
+        binding.leadsrec.layoutManager = layoutManager
 
-        binding!!.leadshimmer.visibility = View.VISIBLE
-        binding!!.leadshimmer.startShimmer()
+        binding.leadshimmer.visibility = View.VISIBLE
+        binding.leadshimmer.startShimmer()
 
         FirebaseFirestore.getInstance().collection("Lead")
             .document(FirebaseAuth.getInstance().uid!!)
             .collection("Nanded").orderBy("time", Query.Direction.DESCENDING)
             .get().addOnSuccessListener { queryDocumentSnapshots ->
                 if (!queryDocumentSnapshots.isEmpty) {
-                    binding!!.leadshimmer.visibility = View.GONE
-                    binding!!.leadshimmer.stopShimmer()
-                    list!!.clear()
+                    binding.leadshimmer.visibility = View.GONE
+                    binding.leadshimmer.stopShimmer()
+                    list.clear()
                     for (data in queryDocumentSnapshots.documents) {
                         val data1 = data.toObject(LeadClass::class.java)
-                        list!!.add(data1)
+                        if (data1 != null) {
+                            list.add(data1)
+                        }
                     }
 
-                    leadsAdapter!!.notifyDataSetChanged()
+                    leadsAdapter.notifyDataSetChanged()
                     count = queryDocumentSnapshots.size().toString()
 
-                    binding!!.leadcount.text = count
+                    binding.leadcount.text = count
                 } else {
-                    binding!!.leadshimmer.visibility = View.GONE
-                    binding!!.leadshimmer.stopShimmer()
-                    Toast.makeText(
-                        this@LeadShowActivity,
-                        "Leads not available",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    binding.leadshimmer.visibility = View.GONE
+                    binding.leadshimmer.stopShimmer()
+                    Toast.makeText(this@LeadShowActivity, "Leads not available", Toast.LENGTH_SHORT).show()
                 }
             }
 
-        binding!!.back.setOnClickListener { finish() }
+        binding.back.setOnClickListener { finish() }
     }
 }

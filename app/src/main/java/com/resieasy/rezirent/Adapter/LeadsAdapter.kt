@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class LeadsAdapter(var context: Context, var list: ArrayList<LeadClass?>) :
+class LeadsAdapter(var context: Context, var list: ArrayList<LeadClass>) :
     RecyclerView.Adapter<LeadsAdapter.ViewHolder>() {
     var ad_dialog: ProgressDialog? = null
 

@@ -16,39 +16,34 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.ActivitySettingBinding
+import com.resieasy.rezirent.databinding.ActivitySettingShowBinding
 
 class SettingActivity : AppCompatActivity() {
-    var binding: ActivitySettingBinding? = null
+    val binding by lazy { ActivitySettingBinding.inflate(layoutInflater) }
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val googleSignInClient by lazy {
+        GoogleSignIn.getClient(
+            this,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySettingBinding.inflate(layoutInflater)
-        setContentView(binding!!.root)
+        setContentView(binding.root)
+
+        setUpAd()
 
 
-        val adRequest = AdRequest.Builder().build()
-        binding!!.adView.loadAd(adRequest)
 
 
-        binding!!.adView.adListener = object : AdListener() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                // Code to be executed when an ad request fails.
-                super.onAdFailedToLoad(adError)
-                binding!!.adView.loadAd(adRequest)
-            }
-        }
-
-
-        val auth = FirebaseAuth.getInstance()
-
-
-        binding!!.contactus.setOnClickListener {
+        binding.contactus.setOnClickListener {
             val intent = Intent(this@SettingActivity, SettingShowActivity::class.java)
             intent.putExtra("type", "contactus")
             startActivity(intent)
         }
-        binding!!.back.setOnClickListener { finish() }
-        binding!!.moreapp.setOnClickListener {
+        binding.back.setOnClickListener { finish() }
+        binding.moreapp.setOnClickListener {
             startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
@@ -56,22 +51,22 @@ class SettingActivity : AppCompatActivity() {
                 )
             )
         }
-        binding!!.aboutus.setOnClickListener {
+        binding.aboutus.setOnClickListener {
             val intent = Intent(this@SettingActivity, SettingShowActivity::class.java)
             intent.putExtra("type", "aboutus")
             startActivity(intent)
         }
-        binding!!.privacypolicy.setOnClickListener {
+        binding.privacypolicy.setOnClickListener {
             val intent = Intent(this@SettingActivity, SettingShowActivity::class.java)
             intent.putExtra("type", "pp")
             startActivity(intent)
         }
-        binding!!.termandcondition.setOnClickListener {
+        binding.termandcondition.setOnClickListener {
             val intent = Intent(this@SettingActivity, SettingShowActivity::class.java)
             intent.putExtra("type", "tc")
             startActivity(intent)
         }
-        binding!!.shareapp.setOnClickListener {
+        binding.shareapp.setOnClickListener {
             try {
                 val intent = Intent(Intent.ACTION_SEND)
                 intent.setType("text/plain")
@@ -90,7 +85,7 @@ class SettingActivity : AppCompatActivity() {
                 ).show()
             }
         }
-        binding!!.rateus.setOnClickListener {
+        binding.rateus.setOnClickListener {
             try {
                 startActivity(
                     Intent(
@@ -109,7 +104,7 @@ class SettingActivity : AppCompatActivity() {
 
 
 
-        binding!!.logout.setOnClickListener {
+        binding.logout.setOnClickListener {
             val builder = AlertDialog.Builder(this@SettingActivity)
             builder.setIcon(R.drawable.warna)
             builder.setTitle("LOGOUT")
@@ -117,11 +112,7 @@ class SettingActivity : AppCompatActivity() {
             builder.setPositiveButton(
                 "Yes"
             ) { dialog, which ->
-                val gso =
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
 
-                val googleSignInClient =
-                    GoogleSignIn.getClient(this@SettingActivity, gso)
                 googleSignInClient.signOut().addOnSuccessListener {
                     val hashMap = HashMap<String, Any>()
                     hashMap["token"] = ""
@@ -157,6 +148,21 @@ class SettingActivity : AppCompatActivity() {
                 ).show()
             }
             builder.show()
+        }
+    }
+
+    private fun setUpAd() {
+
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
+
+
+        binding.adView.adListener = object : AdListener() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                // Code to be executed when an ad request fails.
+                super.onAdFailedToLoad(adError)
+                binding.adView.loadAd(adRequest)
+            }
         }
     }
 }

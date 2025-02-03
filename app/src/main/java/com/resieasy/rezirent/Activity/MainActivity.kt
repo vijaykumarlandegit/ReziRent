@@ -57,13 +57,10 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    var binding: ActivityMainBinding? = null
+   lateinit var binding: ActivityMainBinding 
     var auth: FirebaseAuth? = null
-    var fragmentarrylist: ArrayList<Fragment> = ArrayList()
-    var bottomNavigationView: BottomNavigationView? = null
 
-    private var list: ArrayList<BothResiClass>? = null
-    private var list1: ArrayList<SellResiClass>? = null
+     private var list1: ArrayList<SellResiClass>? = null
     private var list2: ArrayList<AddFlatClass>? = null
     private var list3: ArrayList<AddHostelClass>? = null
 
@@ -75,13 +72,12 @@ class MainActivity : AppCompatActivity() {
    private var UPDATE_CODE: Int = 8888
     private var appUpdateManager: AppUpdateManager? = null
 
-
-    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+     private val mainActivityViewModel: MainActivityViewModel by viewModels()
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
         MobileAds.initialize(
             this
@@ -89,12 +85,12 @@ class MainActivity : AppCompatActivity() {
 
 
         val adRequest = AdRequest.Builder().build()
-        binding!!.adView.loadAd(adRequest)
+        binding.adView.loadAd(adRequest)
 
-        binding!!.adView.adListener = object : AdListener() {
+        binding.adView.adListener = object : AdListener() {
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                 super.onAdFailedToLoad(loadAdError)
-                binding!!.adView.loadAd(adRequest)
+                binding.adView.loadAd(adRequest)
             }
         }
 
@@ -105,34 +101,34 @@ class MainActivity : AppCompatActivity() {
 
         list1 = ArrayList()
         adapter1 = SellHoriAdapter(this@MainActivity, list1!!)
-        binding!!.sellhorihomerec.adapter = adapter1
+        binding.sellhorihomerec.adapter = adapter1
 
         val layoutManager1 =
             LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-        binding!!.sellhorihomerec.layoutManager = layoutManager1
+        binding.sellhorihomerec.layoutManager = layoutManager1
 
         list2 = ArrayList()
         adapter2 = RentHoriAdapter(this@MainActivity, list2!!)
-        binding!!.renthorihomerec.adapter = adapter2
+        binding.renthorihomerec.adapter = adapter2
 
         val layoutManager2 =
             LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-        binding!!.renthorihomerec.layoutManager = layoutManager2
+        binding.renthorihomerec.layoutManager = layoutManager2
 
         list3 = ArrayList()
         adapter3 = HostelHoriAdapter(this@MainActivity, list3!!)
-        binding!!.hostelhorihomerec.adapter = adapter3
+        binding.hostelhorihomerec.adapter = adapter3
 
         val layoutManager3 =
             LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-        binding!!.hostelhorihomerec.layoutManager = layoutManager3
+        binding.hostelhorihomerec.layoutManager = layoutManager3
 
-        binding!!.hostelshimmer.visibility = View.VISIBLE
-        binding!!.hostelshimmer.startShimmer()
-        binding!!.rentshimmer.visibility = View.VISIBLE
-        binding!!.rentshimmer.startShimmer()
-        binding!!.sellshimmer.visibility = View.VISIBLE
-        binding!!.sellshimmer.startShimmer()
+        binding.hostelshimmer.visibility = View.VISIBLE
+        binding.hostelshimmer.startShimmer()
+        binding.rentshimmer.visibility = View.VISIBLE
+        binding.rentshimmer.startShimmer()
+        binding.sellshimmer.visibility = View.VISIBLE
+        binding.sellshimmer.startShimmer()
 
 
       /*  val firebaseFirestore = FirebaseFirestore.getInstance()
@@ -146,14 +142,13 @@ class MainActivity : AppCompatActivity() {
         ) { users: List<AddHostelClass>? ->
             if (users != null) {
                 // Stop shimmer and hide it
-                binding!!.hostelshimmer.visibility = View.GONE
-                binding!!.hostelshimmer.stopShimmer()
+                binding.hostelshimmer.visibility = View.GONE
+                binding.hostelshimmer.stopShimmer()
 
-                // Log observed data
+
                 Log.d("MainActivity2", "Observed users: $users")
 
-                // Update the adapter's list
-                adapter3!!.updateList(ArrayList(users))
+                 adapter3!!.updateList(ArrayList(users))
             } else {
                 Log.d("MainActivity2", "No users observed.")
             }
@@ -161,65 +156,24 @@ class MainActivity : AppCompatActivity() {
 
         mainActivityViewModel.loadHostelPG()
 
-        /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Hostel")
-                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            binding.hostelshimmer.setVisibility(View.GONE);
-                            binding.hostelshimmer.stopShimmer();
 
-                            list3.clear();
-                            List<DocumentSnapshot> list111 = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d3 : list111) {
-                                AddHostelClass data111 = d3.toObject(AddHostelClass.class);
-                                list3.add(data111);
-
-                            }
-                            adapter3.notifyDataSetChanged();
-                        }
-
-
-                    }
-                });*/
         mainActivityViewModel.rent.observe(
             this
         ) { users: List<AddFlatClass> ->
-            binding!!.rentshimmer.visibility = View.GONE
-            binding!!.rentshimmer.stopShimmer()
+            binding.rentshimmer.visibility = View.GONE
+            binding.rentshimmer.stopShimmer()
 
             Log.d("MainActivity2", "Observed users: $users")
             adapter2!!.updateList(ArrayList(users))
         }
         mainActivityViewModel.loadRent()
 
-        /*    FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Rent")
-                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            binding.rentshimmer.setVisibility(View.GONE);
-                            binding.rentshimmer.stopShimmer();
-
-                            list2.clear();
-                            List<DocumentSnapshot> list22 = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d2 : list22) {
-                                AddFlatClass data2 = d2.toObject(AddFlatClass.class);
-                                list2.add(data2);
-
-                            }
-                            adapter2.notifyDataSetChanged();
-                        }
-                    }
-                });*/
         mainActivityViewModel.sell.observe(
             this
         ) { users: List<SellResiClass> ->
-            binding!!.sellshimmer.visibility = View.GONE
-            binding!!.sellshimmer.stopShimmer()
+            binding.sellshimmer.visibility = View.GONE
+            binding.sellshimmer.stopShimmer()
 
 
             Log.d("MainActivity2", "Observed users: $users")
@@ -228,77 +182,53 @@ class MainActivity : AppCompatActivity() {
         mainActivityViewModel.loadSell()
 
 
-        /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("status", "Active").whereEqualTo("rtype", "Sell")
-                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            binding.sellshimmer.setVisibility(View.GONE);
-                            binding.sellshimmer.stopShimmer();
 
-                            list1.clear();
-                            List<DocumentSnapshot> list11 = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d1 : list11) {
-                                SellResiClass data1 = d1.toObject(SellResiClass.class);
-                                list1.add(data1);
-
-                            }
-                            adapter1.notifyDataSetChanged();
-
-                        }else {
-                            binding.sellshimmer.setVisibility(View.GONE);
-                            binding.sellshimmer.stopShimmer();
-                        }
-
-                    }
-                });*/
-        binding!!.allresibottom.setOnClickListener {
+        binding.allresibottom.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "All")
             startActivity(intent)
         }
-        binding!!.profile.setOnClickListener {
+        binding.profile.setOnClickListener {
             val intent = Intent(this@MainActivity, ProfileActivity::class.java)
             startActivity(intent)
         }
-        binding!!.search12.setOnClickListener {
+        binding.search12.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "All")
             startActivity(intent)
         }
 
 
-        binding!!.toprent.setOnClickListener {
+        binding.toprent.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "Rent")
             startActivity(intent)
         }
-        binding!!.topsell.setOnClickListener {
+        binding.topsell.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "Sell")
             startActivity(intent)
         }
-        binding!!.tophostelpg.setOnClickListener {
+        binding.tophostelpg.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "Hostel")
             startActivity(intent)
         }
-        binding!!.topallproperty.setOnClickListener {
+        binding.topallproperty.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "All")
             startActivity(intent)
         }
-        binding!!.rentcart.setOnClickListener {
+        binding.rentcart.setOnClickListener {
             val intent = Intent(this@MainActivity, AddResidencyActivity::class.java)
             startActivity(intent)
         }
-        binding!!.imageView.setOnClickListener { }
-        binding!!.sellcart.setOnClickListener {
+        binding.imageView.setOnClickListener { }
+        binding.sellcart.setOnClickListener {
             val intent = Intent(this@MainActivity, AddSellResiActivity::class.java)
             startActivity(intent)
         }
-        binding!!.hostelcart.setOnClickListener {
+        binding.hostelcart.setOnClickListener {
             val intent = Intent(this@MainActivity, AddHostelActivity::class.java)
             startActivity(intent)
         }
