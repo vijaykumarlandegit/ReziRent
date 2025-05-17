@@ -32,7 +32,9 @@ class BothActivityViewModel @Inject constructor(
     // Method to filter data by type directly in ViewModel
     fun filterDataByType(type: String) {
         _allData.value?.let {
-            val filtered = it.filter { item -> item.rtype == type }
+            val filtered = it.filter { item ->
+                item.rtype == type
+            }
             _filteredData.postValue(filtered)
         }
     }

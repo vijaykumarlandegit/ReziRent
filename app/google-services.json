@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "825775877561-ge3p94kkvjkct9hqk9crd19bj4dbnu56.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.resieasy.rezirent",
+            "certificate_hash": "5321120ed4fb8ba91ab1a47e3216f8d8392f5b95"
+          }
+        },
+        {
+          "client_id": "825775877561-sn6rm7a1d7ncvj749tb1jtl2drdh64ea.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.resieasy.rezirent",
+            "certificate_hash": "d831b4628fcd1f4ee312393e8c6171556dff8386"
+          }
+        },
+        {
           "client_id": "825775877561-fhd25aj13btnph23ojcvmf2gipgimtg7.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -1,13 +1,12 @@
 package com.resieasy.rezirent.Activity
 
-import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -15,12 +14,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import com.resieasy.rezirent.Class.UsersClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.ActivitySignInBinding
@@ -33,8 +28,7 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignInBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var progressDialog: ProgressBar
-
+    lateinit var progressDialog: AlertDialog
     private var personEmail: String? = null
     private var personPhoto: Uri? = null
 
@@ -44,7 +38,7 @@ class SignInActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
-        progressDialog = findViewById(R.id.progressBar)
+
 
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("825775877561-fhd25aj13btnph23ojcvmf2gipgimtg7.apps.googleusercontent.com")
@@ -54,7 +48,7 @@ class SignInActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
         binding.googlesigninbutton.setOnClickListener {
-            progressDialog.visibility = View.VISIBLE
+            showLoadingDialog("Fetching Accounts ....", cancelable = true)
             val signInIntent = googleSignInClient.signInIntent
             startActivityForResult(signInIntent, 123)
         }
@@ -64,7 +58,7 @@ class SignInActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 123) {
-            progressDialog.visibility = View.GONE
+            hideLoadingDialog()
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
@@ -149,7 +143,25 @@ class SignInActivity : AppCompatActivity() {
         personEmail = savedInstanceState.getString("personEmail")
         personPhoto = savedInstanceState.getParcelable("personPhoto")
     }
+    fun showLoadingDialog(message: String = "Please wait...", cancelable: Boolean = false) {
+        val view = layoutInflater.inflate(R.layout.alert_dialog_sample, null)
+        val messageText = view.findViewById<TextView>(R.id.progressText)
+        messageText.text = message
 
+        progressDialog = AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(cancelable)
+            .create()
+
+        progressDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        progressDialog.show()
+    }
+
+    fun hideLoadingDialog() {
+        if (::progressDialog.isInitialized && progressDialog.isShowing) {
+            progressDialog.dismiss()
+        }
+    }
 
 }
 

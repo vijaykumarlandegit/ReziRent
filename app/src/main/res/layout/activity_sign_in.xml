@@ -17,6 +17,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
+
         <ImageView
             android:id="@+id/imageView7"
             android:layout_width="80dp"
@@ -56,13 +58,14 @@
             android:id="@+id/googlesigninbutton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_alignParentTop="true"
             android:layout_marginStart="10dp"
+            android:layout_marginTop="30dp"
             android:layout_marginEnd="10dp"
             android:foreground="?android:attr/selectableItemBackground"
             android:text="Text"
-            android:layout_alignParentTop="true"
             android:textSize="18sp" />
+
         <TextView
             android:id="@+id/textView25"
             android:layout_width="wrap_content"
