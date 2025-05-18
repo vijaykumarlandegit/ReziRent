@@ -15,8 +15,8 @@ class BothActivityViewModel @Inject constructor(
     private val repository: BothActivityRepository
 ) : ViewModel() {
 
-    private val _allData = MutableLiveData<List<BothResiClass>>()
-    val allData: LiveData<List<BothResiClass>> get() = _allData
+    private val _allData = MutableLiveData<List<BothResiClass>>()//only accessible by viewmodel
+    val allData: LiveData<List<BothResiClass>> get() = _allData //accessible by activity, only read -> get()
 
     private val _filteredData = MutableLiveData<List<BothResiClass>>()
     val filteredData: LiveData<List<BothResiClass>> get() = _filteredData
@@ -25,7 +25,7 @@ class BothActivityViewModel @Inject constructor(
     fun fetchAllData() {
         viewModelScope.launch {
             val data = repository.getAllData()
-            _allData.postValue(data)
+            _allData.value = data//Use .value => main thread OR Use .postValue() => background thread
         }
     }
 
@@ -35,7 +35,7 @@ class BothActivityViewModel @Inject constructor(
             val filtered = it.filter { item ->
                 item.rtype == type
             }
-            _filteredData.postValue(filtered)
+            _filteredData.value = filtered
         }
     }
 

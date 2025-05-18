@@ -19,12 +19,32 @@ class BothActivityRepository @Inject constructor(
             .collection("AllData")
             .whereEqualTo("status", "Active")
             .get()
-            .await() // Coroutine call to Firebase
+            .await() // .await() makes it suspendable, so it doesn’t block the main thread.
 
         return querySnapshot.documents.mapNotNull { document ->
             document.toObject(BothResiClass::class.java)
         }
+        // return documentSnapshot.toObject(BothResiClass::class.java)
     }
+
+
+//    suspend fun getAllData(): List<BothResiClass> {
+//        return try {
+//            val querySnapshot = firebaseFirestore
+//                .collection("Nanded")
+//                .document("NandedCity")
+//                .collection("AllData")
+//                .whereEqualTo("status", "Active")
+//                .get()
+//                .await()
+//
+//            querySnapshot.documents.mapNotNull { document ->
+//                document.toObject(BothResiClass::class.java)
+//            }
+//        } catch (e: Exception) {
+//            emptyList() // Return empty list if something goes wrong
+//        }
+//    }
 
 
 }

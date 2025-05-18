@@ -4,15 +4,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.Class.AddFlatClass
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class ShowResiRepository @Inject constructor(private var databse:FirebaseFirestore) {
+@Singleton
+class ShowResiRepository @Inject constructor(private var database: FirebaseFirestore) {
 
-    suspend fun fetchResiData(id:String):AddFlatClass?{
+    suspend fun fetchResiData(id: String): AddFlatClass? {
         return try {
-            val snapshot=databse.collection("Nanded")
-                .document("NandedCity").collection("AllData").document(id).get().await()
+            val snapshot = database
+                .collection("Nanded")
+                .document("NandedCity")
+                .collection("AllData")
+                .document(id)
+                .get()
+                .await()
+
             snapshot.toObject(AddFlatClass::class.java)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             null
         }
     }

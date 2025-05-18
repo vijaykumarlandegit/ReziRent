@@ -16,8 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ShowSellViewModel @Inject constructor(private val repository :ShowSellRepository):ViewModel(){
 
-    private val _data = MutableStateFlow<SellResiClass?>(null)
-    val data: StateFlow<SellResiClass?> = _data
+    private val _data = MutableLiveData<SellResiClass?>(null)
+    val data: LiveData<SellResiClass?> = _data
 
      fun getSellData(id:String){
          viewModelScope.launch {
