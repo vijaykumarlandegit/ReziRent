@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     private var appUpdateManager: AppUpdateManager? = null
 
      private val mainActivityViewModel: MainActivityViewModel by viewModels()
+   //  private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +83,9 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(
             this
         ) { }
+
+        //val viewModel = ViewModelProvider(this)[MyViewModel::class.java]
+        //val viewModel = ViewModelProvider(this).get(MyViewModel::class.java)
 
 
         val adRequest = AdRequest.Builder().build()

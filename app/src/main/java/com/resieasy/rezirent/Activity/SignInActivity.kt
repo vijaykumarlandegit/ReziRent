@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -32,6 +34,8 @@ class SignInActivity : AppCompatActivity() {
     private var personEmail: String? = null
     private var personPhoto: Uri? = null
 
+    private lateinit var signInLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignInBinding.inflate(layoutInflater)
@@ -39,7 +43,7 @@ class SignInActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-
+        // 1. Setup Google Sign-In Options
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("825775877561-fhd25aj13btnph23ojcvmf2gipgimtg7.apps.googleusercontent.com")
             .requestEmail()
@@ -47,32 +51,34 @@ class SignInActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
-        binding.googlesigninbutton.setOnClickListener {
-            showLoadingDialog("Fetching Accounts ....", cancelable = true)
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, 123)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 123) {
-            hideLoadingDialog()
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                account?.idToken?.let { firebaseAuthWithGoogle(it) }
-            } catch (e: ApiException) {
-                Log.w("TAG", "Google sign in failed", e)
+        // 2. Initialize ActivityResultLauncher
+        signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    account?.idToken?.let { firebaseAuthWithGoogle(it) }
+                } catch (e: ApiException) {
+                    Log.w("TAG", "Google sign in failed", e)//message+ detailed error
+                }
+            } else {
+                Log.w("TAG", "Google sign in canceled or failed")
             }
         }
+
+        // 3. Trigger Google Sign-In
+        binding.googlesigninbutton.setOnClickListener {
+            showLoadingDialog("Fetching Accounts ....", cancelable = true)
+            signInLauncher.launch(googleSignInClient.signInIntent)
+        }
     }
 
+    // 4. Firebase Auth
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
+                hideLoadingDialog()
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     val acct = GoogleSignIn.getLastSignedInAccount(this)
@@ -90,7 +96,6 @@ class SignInActivity : AppCompatActivity() {
                 }
             }
     }
-
     private fun saveUserToFirestore(token: String?) {
         val userId = auth.uid ?: return
 

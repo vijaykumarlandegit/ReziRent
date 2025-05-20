@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-     @HiltViewModel
+    @HiltViewModel
     class ShowHostelViewModel @Inject constructor(private val repository: ShowHostelRepository):
         ViewModel(){
 
