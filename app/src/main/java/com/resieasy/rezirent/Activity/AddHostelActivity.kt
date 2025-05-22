@@ -36,7 +36,9 @@ import com.resieasy.rezirent.databinding.ActivityAddHostelBinding
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.Calendar
+import java.util.HashMap
 import java.util.Date
+import java.util.ArrayList
 import java.util.Locale
 
 class AddHostelActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {

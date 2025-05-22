@@ -55,48 +55,53 @@ class ProfileActivity : AppCompatActivity() {
         ad_dialog.setMessage("Ad loading")
         ad_dialog.setCancelable(false)
 
-        //admob
-        val adRequest = AdRequest.Builder().build()
-
-        loadIad(adRequest)
+//        //admob
+//        val adRequest = AdRequest.Builder().build()
+//
+//        loadIad(adRequest)
 
         binding.leadbtn2.setOnClickListener {
-            if (mInterstitialAd != null) {
-                ad_dialog.show()
-                val handler = Handler(Looper.getMainLooper())
-                handler.postDelayed({
-                    ad_dialog.dismiss()
-                    mInterstitialAd!!.show(this@ProfileActivity)
-                    mInterstitialAd!!.fullScreenContentCallback =
-                        object : FullScreenContentCallback() {
-                            override fun onAdDismissedFullScreenContent() {
-                                super.onAdDismissedFullScreenContent()
-                                mInterstitialAd = null
-                                val intent2 = Intent(
-                                    this@ProfileActivity,
-                                    LeadShowActivity::class.java
-                                )
-                                startActivity(intent2)
-                            }
-
-                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                super.onAdFailedToShowFullScreenContent(adError)
-                                mInterstitialAd = null
-                                val intent2 = Intent(
-                                    this@ProfileActivity,
-                                    LeadShowActivity::class.java
-                                )
-                                startActivity(intent2)
-                            }
-                        }
-                }, 1000)
-            } else {
-                val intent2 = Intent(
-                    this@ProfileActivity,
-                    LeadShowActivity::class.java
-                )
-                startActivity(intent2)
-            }
+            val intent2 = Intent(
+                this@ProfileActivity,
+                LeadShowActivity::class.java
+            )
+            startActivity(intent2)
+//            if (mInterstitialAd != null) {
+//                ad_dialog.show()
+//                val handler = Handler(Looper.getMainLooper())
+//                handler.postDelayed({
+//                    ad_dialog.dismiss()
+//                    mInterstitialAd!!.show(this@ProfileActivity)
+//                    mInterstitialAd!!.fullScreenContentCallback =
+//                        object : FullScreenContentCallback() {
+//                            override fun onAdDismissedFullScreenContent() {
+//                                super.onAdDismissedFullScreenContent()
+//                                mInterstitialAd = null
+//                                val intent2 = Intent(
+//                                    this@ProfileActivity,
+//                                    LeadShowActivity::class.java
+//                                )
+//                                startActivity(intent2)
+//                            }
+//
+//                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+//                                super.onAdFailedToShowFullScreenContent(adError)
+//                                mInterstitialAd = null
+//                                val intent2 = Intent(
+//                                    this@ProfileActivity,
+//                                    LeadShowActivity::class.java
+//                                )
+//                                startActivity(intent2)
+//                            }
+//                        }
+//                }, 1000)
+//            } else {
+//                val intent2 = Intent(
+//                    this@ProfileActivity,
+//                    LeadShowActivity::class.java
+//                )
+//                startActivity(intent2)
+//            }
         }
 
 
@@ -174,11 +179,25 @@ class ProfileActivity : AppCompatActivity() {
                 number = snapshot.getString("number")
                 gmail = snapshot.getString("mail")
 
-                binding.profilename.text = name
-                binding.profilenumber.text = number
-                binding.profileemail.text = gmail
-                binding.optionalname.text = name
+//                binding.profilename.text = name
+//                binding.profilenumber.text = number
+//                binding.profileemail.text = gmail
+//                binding.optionalname.text = name
+//
+                uploadUserDataOnSharedPref(name, number, gmail)
             }
+        val pref=getSharedPreferences("UserData", MODE_PRIVATE)
+        val name = pref.getString("name", "")
+        val number = pref.getString("number", "")
+        val gmail = pref.getString("gmail", "")
+        binding.profilename.text = name
+        binding.profilenumber.text = number
+        binding.profileemail.text = gmail
+        binding.optionalname.text = name
+
+
+
+
 
         binding.showprofile.setOnClickListener {
             binding.showprofile.visibility = View.GONE
@@ -255,6 +274,14 @@ class ProfileActivity : AppCompatActivity() {
             }
             alertDialog.show()
         }
+    }
+    private fun uploadUserDataOnSharedPref(name: String?, number: String?, gmail: String?) {
+        val pref=getSharedPreferences("UserData", MODE_PRIVATE)
+        val editor= pref.edit()
+        editor.putString("name", name)
+        editor.putString("number", number)
+        editor.putString("gmail", gmail)
+        editor.apply()
     }
 
     private fun loadIad(adRequest: AdRequest) {

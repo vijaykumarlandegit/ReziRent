@@ -187,8 +187,7 @@ class ShowHostelDataActivity : AppCompatActivity() {
     }
 
     private fun showFacilityData(facilityViewModel: FacilityViewModel, id: String) {
-        lifecycleScope.launchWhenStarted {
-            facilityViewModel.data.collect {
+            facilityViewModel.data.observe(this@ShowHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val ac = documentSnapshot.ac
@@ -333,12 +332,12 @@ class ShowHostelDataActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
+
     }
 
     private fun showRulesData(rulesViewModel: RulesViewModel, id: String) {
         lifecycleScope.launchWhenStarted {
-            rulesViewModel.data.collect {
+            rulesViewModel.data.observe(this@ShowHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val trouble = documentSnapshot.trouble
@@ -386,7 +385,7 @@ class ShowHostelDataActivity : AppCompatActivity() {
 
     private fun showHostelData(showHostelViewModel: ShowHostelViewModel, id: String) {
         lifecycleScope.launchWhenStarted {
-            showHostelViewModel.data.collect {
+            showHostelViewModel.data.observe(this@ShowHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     `in` = documentSnapshot.input
                     latitude = documentSnapshot.latitude

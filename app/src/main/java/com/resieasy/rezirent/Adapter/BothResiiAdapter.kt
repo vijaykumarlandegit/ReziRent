@@ -315,7 +315,7 @@ class BothResiiAdapter(
 
     private fun showHostelFacility(facilityViewModel: FacilityViewModel,   context: AppCompatActivity, viewHolder:  HostelViewHolder) {
       context.lifecycleScope.launchWhenStarted {
-          facilityViewModel.data.collect{
+          facilityViewModel.data.observe(context){
               it?.let {documentSnapshot->
                   val clean = documentSnapshot.clean
                   val ac = documentSnapshot.ac
@@ -460,8 +460,7 @@ class BothResiiAdapter(
     }
 
     private fun showHostelData(showHostelViewModel: ShowHostelViewModel,  context: AppCompatActivity, viewHolder: HostelViewHolder) {
-      context.lifecycleScope.launchWhenStarted {
-          showHostelViewModel.data.collect{
+          showHostelViewModel.data.observe(context) {
               it?.let {documentSnapshot->
                   val name =documentSnapshot.name
                   val resitype = documentSnapshot.subtype
@@ -483,14 +482,13 @@ class BothResiiAdapter(
                   }
               }
           }
-      }
+
 
     }
 
     private fun showSellData(showSellViewModel: ShowSellViewModel,   context: AppCompatActivity, viewHolder:  SellViewHolder) {
 
-        context.lifecycleScope.launchWhenStarted {
-            showSellViewModel.data.collect { result ->
+             showSellViewModel.data.observe(context) { result ->
                 result?.let { documentSnapshot ->
                     val name = documentSnapshot.name
                     val resitype = documentSnapshot.subtype
@@ -509,12 +507,11 @@ class BothResiiAdapter(
                     }
                 }
             }
-        }
+
     }
 
     private fun showFacilityData(facilityViewModel: FacilityViewModel,   context1: AppCompatActivity, viewHolder: ResiViewHolder) {
-        context1.lifecycleScope.launchWhenStarted {
-            facilityViewModel.data.collect {
+             facilityViewModel.data.observe(context1) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val ac = documentSnapshot.ac
@@ -655,14 +652,13 @@ class BothResiiAdapter(
                     }
                 }
             }
-        }
+
 
 
     }
 
     private fun showResiData(showResiViewModel: ShowResiViewModel,   context: AppCompatActivity, viewHolder: ResiViewHolder) {
-       context.lifecycleScope.launchWhenStarted {
-           showResiViewModel.data.collect {
+            showResiViewModel.data.observe(context) {
                it?.let { documentSnapshot ->
 
                    val name = documentSnapshot.name
@@ -688,7 +684,7 @@ class BothResiiAdapter(
                    }
                }
            }
-       }
+
 
     }
 

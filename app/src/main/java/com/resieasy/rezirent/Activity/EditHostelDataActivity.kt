@@ -129,7 +129,7 @@ class EditHostelDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedLi
         }
 
         lifecycleScope.launchWhenStarted {
-            showHostelViewModel.data.collect {
+            showHostelViewModel.data.observe(this@EditHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     inumber = documentSnapshot.input
                     val period = documentSnapshot.period
@@ -273,7 +273,7 @@ class EditHostelDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedLi
         }
 
         lifecycleScope.launchWhenStarted {
-            facilityViewModel.data.collect {
+            facilityViewModel.data.observe(this@EditHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val ac = documentSnapshot.ac
@@ -424,7 +424,7 @@ class EditHostelDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedLi
         }
 
         lifecycleScope.launchWhenStarted {
-            rulesViewModel.data.collect {
+            rulesViewModel.data.observe(this@EditHostelDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val trouble = documentSnapshot.trouble

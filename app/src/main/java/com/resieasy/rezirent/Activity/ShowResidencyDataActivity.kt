@@ -195,7 +195,7 @@ class ShowResidencyDataActivity : AppCompatActivity() {
 
     private fun showRulesData(rulesViewModel: RulesViewModel, id: String) {
         lifecycleScope.launchWhenStarted {
-            rulesViewModel.data.collect {
+            rulesViewModel.data.observe(this@ShowResidencyDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val trouble = documentSnapshot.trouble
@@ -243,7 +243,7 @@ class ShowResidencyDataActivity : AppCompatActivity() {
 
     private fun showFacilityData(facilityViewModel: FacilityViewModel, id: String) {
         lifecycleScope.launchWhenStarted {
-            facilityViewModel.data.collect {
+            facilityViewModel.data.observe(this@ShowResidencyDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val ac = documentSnapshot.ac
@@ -393,7 +393,7 @@ class ShowResidencyDataActivity : AppCompatActivity() {
 
     private fun showResiData(showResiViewModel: ShowResiViewModel, id: String) {
         lifecycleScope.launchWhenStarted {
-            showResiViewModel.data.collect {
+            showResiViewModel.data.observe(this@ShowResidencyDataActivity) {
                 it?.let { documentSnapshot->
                     `in` = documentSnapshot.input
                     latitude = documentSnapshot.latitude

@@ -129,7 +129,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
             toast("Something is wrong")
         }
         lifecycleScope.launchWhenStarted {
-            showResiViewModel.data.collect {
+            showResiViewModel.data.observe(this@EditResidencyDataActivity) {
                 it?.let { documentSnapshot ->
                     inumber = documentSnapshot.input
                     oldlatitude = documentSnapshot.latitude
@@ -509,7 +509,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         }
 
         lifecycleScope.launchWhenStarted {
-            facilityViewModel.data.collect {
+            facilityViewModel.data.observe(this@EditResidencyDataActivity) {
                 it?.let { documentSnapshot ->
                     val clean = documentSnapshot.clean
                     val ac = documentSnapshot.ac
@@ -659,7 +659,7 @@ class EditResidencyDataActivity : AppCompatActivity(), AdapterView.OnItemSelecte
         }
 
         lifecycleScope.launchWhenStarted {
-            rulesViewModel.data.collect {
+            rulesViewModel.data.observe(this@EditResidencyDataActivity) {
                 it?.let { documentSnapshot ->
 
                     val clean = documentSnapshot.clean

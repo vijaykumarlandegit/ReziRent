@@ -189,7 +189,7 @@ class ShowSellDataActivity : AppCompatActivity() {
     private fun showSellData(showSellViewModel: ShowSellViewModel,id:String) {
         val remotimage: MutableList<SlideModel> = ArrayList()
         lifecycleScope.launchWhenStarted {
-            showSellViewModel.data.collect { result ->
+            showSellViewModel.data.observe(this@ShowSellDataActivity) { result ->
                 result?.let { documentSnapshot ->
                     `in` = documentSnapshot.input
                     latitude = documentSnapshot.latitude

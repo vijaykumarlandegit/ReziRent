@@ -1,5 +1,7 @@
 package com.resieasy.rezirent.ViewModel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.resieasy.rezirent.Class.FacilityClass
@@ -16,8 +18,8 @@ import javax.inject.Inject
     class RulesViewModel @Inject constructor(private var repository: RuleRepository):
         ViewModel(){
 
-        private val _data= MutableStateFlow<RulesClass?>(null)
-        val data: StateFlow<RulesClass?> =_data
+        private val _data= MutableLiveData<RulesClass?>(null)
+         val data: LiveData<RulesClass?> get()  =_data
 
         fun getRules(id:String){
             viewModelScope.launch {

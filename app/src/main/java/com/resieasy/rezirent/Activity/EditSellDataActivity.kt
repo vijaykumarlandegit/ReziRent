@@ -35,6 +35,11 @@ import java.io.IOException
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.flow.collect // For basic Flow collection
+// or if you are using it within a lifecycle scope, you might need:
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest // If you intend to use collectLatest
 
 class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
@@ -130,14 +135,9 @@ class EditSellDataActivity : AppCompatActivity(), AdapterView.OnItemSelectedList
             GridLayoutManager(this@EditSellDataActivity, 3)
         binding.multiimagerec2.adapter = multioldImageAdapter
 
-
-
-
-
-
         showSellViewModel.getSellData(id)
         lifecycleScope.launchWhenStarted {
-            showSellViewModel.data.collect {
+            showSellViewModel.data.observe(this@EditSellDataActivity) {
                 it?.let { documentSnapshot->
                     inumber = documentSnapshot.input
                     oldlatitude = documentSnapshot.latitude
