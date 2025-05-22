@@ -2,11 +2,15 @@ package com.resieasy.rezirent.Activity
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender.SendIntentException
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -37,6 +41,8 @@ import com.onesignal.OneSignal.initWithContext
 import com.resieasy.rezirent.Activity.AddHostelActivity
 import com.resieasy.rezirent.Activity.AddResidencyActivity
 import com.resieasy.rezirent.Activity.AddSellResiActivity
+import com.resieasy.rezirent.Activity.RoomDB.DAO.HostelRoomDBClass
+import com.resieasy.rezirent.Activity.RoomDB.DAO.ResiRoomViewmodel
 import com.resieasy.rezirent.Adapter.BothResiiAdapter
 import com.resieasy.rezirent.Adapter.HostelHoriAdapter
 import com.resieasy.rezirent.Adapter.RentHoriAdapter
@@ -72,7 +78,9 @@ class MainActivity : AppCompatActivity() {
    private var UPDATE_CODE: Int = 8888
     private var appUpdateManager: AppUpdateManager? = null
 
+    private val resiRoomViewmodel: ResiRoomViewmodel by viewModels()
      private val mainActivityViewModel: MainActivityViewModel by viewModels()
+
    //  private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,24 +149,41 @@ class MainActivity : AppCompatActivity() {
 */
 
 
-        mainActivityViewModel.hostePG.observe(
-            this
-        ) { users: List<AddHostelClass>? ->
-            if (users != null) {
-                // Stop shimmer and hide it
-                binding.hostelshimmer.visibility = View.GONE
-                binding.hostelshimmer.stopShimmer()
+       if (isInternetAvailable(this)) {
+           Toast.makeText(this, "Internet Available", Toast.LENGTH_SHORT).show()
+           //online
+           mainActivityViewModel.hostePG.observe(this) { users: List<AddHostelClass>? ->
+               if (users != null) {
+                   binding.hostelshimmer.visibility = View.GONE
+                   binding.hostelshimmer.stopShimmer()
+                   adapter3!!.updateList(ArrayList(users))
+
+                   val convertedList = users.map { it.toHostelRoomDBClass() }
+                   resiRoomViewmodel.saveToLocalRoom(convertedList)
+               } else {
+                   Log.d("MainActivity2", "No users observed.")
+               }
+           }
+           mainActivityViewModel.loadHostelPG()
+       } else {
+           //offline
+           Toast.makeText(this, "Internet Not Available", Toast.LENGTH_SHORT).show()
+           resiRoomViewmodel.offlineResidencies.observe(this) { list ->
+               if (!list.isNullOrEmpty()) {
+                   binding.hostelshimmer.visibility = View.GONE
+                   binding.hostelshimmer.stopShimmer()
+                   val convertedList = list.map { it.toAddHostelClass() }
+                   adapter3!!.updateList(ArrayList(convertedList))
+
+                }
+           }
+           resiRoomViewmodel.loadFromRoom()
+       }
 
 
-                Log.d("MainActivity2", "Observed users: $users")
 
-                 adapter3!!.updateList(ArrayList(users))
-            } else {
-                Log.d("MainActivity2", "No users observed.")
-            }
-        }
 
-        mainActivityViewModel.loadHostelPG()
+
 
 
         mainActivityViewModel.rent.observe(
@@ -236,6 +261,13 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, AddHostelActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun isInternetAvailable(context: MainActivity): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     /*private fun onesignal() {
@@ -341,4 +373,74 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val ONESIGNAL_APP_ID = "105b8d9e-51ac-45d4-bed8-c23bbe105b32"
     }
+    fun HostelRoomDBClass.toAddHostelClass(): AddHostelClass {
+        return AddHostelClass(
+            mail = mail,
+            status = status,
+            rtype = rtype,
+            type = type,
+            subtype = subtype,
+            name = name,
+            lowercase = lowercase,
+            address = address,
+            area = area,
+            oname = oname,
+            number = number,
+            whatsapp = whatsapp,
+            rent = rent,
+            erent = erent,
+            deposit = deposit,
+            extra = extra,
+            more = more,
+            policy = policy,
+            gopen = gopen,
+            gclose = gclose,
+            userid = userid,
+            id = id,
+            f1 = f1,
+            f2 = f2,
+            f3 = f3,
+            i1 = i1,
+            input = input,
+            period = period,
+            latitude = latitude,
+            longitude = longitude,
+            time = time
+        )
+    } fun  AddHostelClass.toHostelRoomDBClass(): HostelRoomDBClass {
+        return HostelRoomDBClass(
+            mail = mail.toString(),
+            status = status,
+            rtype = rtype,
+            type = type,
+            subtype = subtype,
+            name = name,
+            lowercase = lowercase,
+            address = address,
+            area = area,
+            oname = oname,
+            number = number,
+            whatsapp = whatsapp,
+            rent = rent,
+            erent = erent,
+            deposit = deposit,
+            extra = extra,
+            more = more,
+            policy = policy,
+            gopen = gopen,
+            gclose = gclose,
+            userid = userid,
+            id = id,
+            f1 = f1,
+            f2 = f2,
+            f3 = f3,
+            i1 = i1,
+            input = input,
+            period = period,
+            latitude = latitude,
+            longitude = longitude,
+            time = time
+        )
+    }
+
 }

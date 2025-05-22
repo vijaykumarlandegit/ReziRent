@@ -1,7 +1,10 @@
 package com.resieasy.rezirent.Activity.Hilt
 
 import android.content.Context
+import androidx.room.Room
 import com.google.firebase.firestore.FirebaseFirestore
+import com.resieasy.rezirent.Activity.RoomDB.DAO.AppDatabase
+import com.resieasy.rezirent.Activity.RoomDB.DAO.ResidencyDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +24,21 @@ object AppModule {
         return FirebaseFirestore.getInstance()
     }
 
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext appContext: Context): AppDatabase {
+        return Room.databaseBuilder(
+            appContext,
+            AppDatabase::class.java,
+            "hostelRoomDB"
+        ).build()
+    }
+
+    @Provides
+    fun provideResidencyDao(database: AppDatabase): ResidencyDao {
+        return database.residencyDao()
+    }
 
 //
 //    @Provides

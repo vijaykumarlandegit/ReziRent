@@ -13,58 +13,29 @@ import javax.inject.Singleton
 class MainActivityRepository @Inject constructor(private val firebase: FirebaseFirestore) {
 
     suspend fun fetchHostelPG(): List<AddHostelClass> {
+        return fetchData("Hostel", AddHostelClass::class.java)
+    }
+
+    suspend fun fetchRent(): List<AddFlatClass> {
+        return fetchData("Rent", AddFlatClass::class.java)
+    }
+
+    suspend fun fetchSell(): List<SellResiClass> {
+        return fetchData("Sell", SellResiClass::class.java)
+    }
+
+    private suspend fun <T> fetchData(rtype: String, clazz: Class<T>): List<T> {
         return try {
             val snapshot = firebase
                 .collection("Nanded")
                 .document("NandedCity")
                 .collection("AllData")
                 .whereEqualTo("status", "Active")
-                .whereEqualTo("rtype", "Hostel")
+                .whereEqualTo("rtype", rtype)
                 .get()
                 .await()
 
-            snapshot.documents.mapNotNull {
-                it.toObject(AddHostelClass::class.java)
-            }
-
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    suspend fun fetchRent(): List<AddFlatClass> {
-        return try {
-            val querySnapshot = firebase
-                .collection("Nanded")
-                .document("NandedCity")
-                .collection("AllData")
-                .whereEqualTo("status", "Active")
-                .whereEqualTo("rtype", "Rent")
-                .get().await()
-
-            querySnapshot.documents.mapNotNull {
-                it.toObject(AddFlatClass::class.java)
-            }
-        } catch (e: Exception) {
-            emptyList()
-
-        }
-    }
-
-    suspend fun fetchSell(): List<SellResiClass> {
-        return try {
-            val querySnapshot = firebase
-                .collection("Nanded")
-                .document("NandedCity")
-                .collection("AllData")
-                .whereEqualTo("status", "Active")
-                .whereEqualTo("rtype", "Sell")
-                .get()
-                .await()
-
-            querySnapshot.documents.mapNotNull {
-                it.toObject(SellResiClass::class.java)
-            }
+            snapshot.documents.mapNotNull { it.toObject(clazz) }
         } catch (e: Exception) {
             emptyList()
         }

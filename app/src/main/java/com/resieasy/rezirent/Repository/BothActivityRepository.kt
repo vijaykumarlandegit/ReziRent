@@ -11,40 +11,40 @@ class BothActivityRepository @Inject constructor(
     private val firebaseFirestore: FirebaseFirestore
 ) {
 
-    // Fetch all data from Firebase Firestore
-    suspend fun getAllData(): List<BothResiClass> {
-        val querySnapshot = firebaseFirestore
-            .collection("Nanded")
-            .document("NandedCity")
-            .collection("AllData")
-            .whereEqualTo("status", "Active")
-            .get()
-            .await() // .await() makes it suspendable, so it doesn’t block the main thread.
-
-        return querySnapshot.documents.mapNotNull { document ->
-            document.toObject(BothResiClass::class.java)
-        }
-        // return documentSnapshot.toObject(BothResiClass::class.java)
-    }
-
-
+//    // Fetch all data from Firebase Firestore
 //    suspend fun getAllData(): List<BothResiClass> {
-//        return try {
-//            val querySnapshot = firebaseFirestore
-//                .collection("Nanded")
-//                .document("NandedCity")
-//                .collection("AllData")
-//                .whereEqualTo("status", "Active")
-//                .get()
-//                .await()
+//        val querySnapshot = firebaseFirestore
+//            .collection("Nanded")
+//            .document("NandedCity")
+//            .collection("AllData")
+//            .whereEqualTo("status", "Active")
+//            .get()
+//            .await() // .await() makes it suspendable, so it doesn’t block the main thread.
 //
-//            querySnapshot.documents.mapNotNull { document ->
-//                document.toObject(BothResiClass::class.java)
-//            }
-//        } catch (e: Exception) {
-//            emptyList() // Return empty list if something goes wrong
+//        return querySnapshot.documents.mapNotNull { document ->
+//            document.toObject(BothResiClass::class.java)
 //        }
+//        // return documentSnapshot.toObject(BothResiClass::class.java)
 //    }
+
+
+    suspend fun getAllData(): List<BothResiClass> {
+        return try {
+            val querySnapshot = firebaseFirestore
+                .collection("Nanded")
+                .document("NandedCity")
+                .collection("AllData")
+                .whereEqualTo("status", "Active")
+                .get()
+                .await()
+
+            querySnapshot.documents.mapNotNull { document ->
+                document.toObject(BothResiClass::class.java)
+            }
+        } catch (e: Exception) {
+            emptyList() // Return empty list if something goes wrong
+        }
+    }
 
 
 }

@@ -29,7 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class BothResiiActivity : AppCompatActivity() {
-    lateinit var binding: ActivityBothResiiBinding 
+    lateinit var binding: ActivityBothResiiBinding
 
     var list: ArrayList<BothResiClass?> = ArrayList()
     lateinit var adapter12: BothResiiAdapter
@@ -46,11 +46,8 @@ class BothResiiActivity : AppCompatActivity() {
         binding = ActivityBothResiiBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupRecyclerView()
 
-        adapter12 = BothResiiAdapter(list, this@BothResiiActivity,showResiViewModel,showSellViewModel,showHostelViewModel,facilityViewModel)
-        binding.bothrec.adapter = adapter12
-        val manager = LinearLayoutManager(this@BothResiiActivity)
-        binding.bothrec.layoutManager = manager
 
 
         val querytype = intent.getStringExtra("topquery")
@@ -61,215 +58,57 @@ class BothResiiActivity : AppCompatActivity() {
             binding.bothshimmer.visibility = View.VISIBLE
             binding.bothshimmer.startShimmer()
             Toast.makeText(this, "All Residency", Toast.LENGTH_SHORT).show()
-            bothActivityViewModel.allData.observe(this, Observer { data ->
-                if(data!=null && data.isNotEmpty()){
+
+            bothActivityViewModel.allData.observe(this) { data ->
+                if (!data.isNullOrEmpty()) {
                     adapter12.updateList(ArrayList(data))
                     binding.bothshimmer.visibility = View.GONE
                     binding.bothshimmer.stopShimmer()
                 }
-            })
+            }
             bothActivityViewModel.fetchAllData()
-          /*  FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("status", "Active")
-                .get().addOnSuccessListener { queryDocumentSnapshots ->
-                    list.clear()
-                    for (data in queryDocumentSnapshots.documents) {
-                        val data1 = data.toObject(BothResiClass::class.java)
-                        list.add(data1)
-                    }
-                    adapter12!!.notifyDataSetChanged()
-                    // dialog.dismiss();
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }*/
         }
-        if (querytype == "Rent") {
-            binding.bothshimmer.startShimmer()
-            binding.bothshimmer.visibility = View.VISIBLE
 
-            Toast.makeText(this, "Rental Residency", Toast.LENGTH_SHORT).show()
-            bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                if(data!=null && data.isNotEmpty()){
+        if (querytype == "Rent" || querytype == "Sell" || querytype == "Hostel") {
+            binding.bothshimmer.visibility = View.VISIBLE
+            binding.bothshimmer.startShimmer()
+            Toast.makeText(this, "$querytype Residency", Toast.LENGTH_SHORT).show()
+
+            bothActivityViewModel.filteredData.observe(this) { data ->
+                if (!data.isNullOrEmpty()) {
                     adapter12.updateList(ArrayList(data))
                     binding.bothshimmer.visibility = View.GONE
                     binding.bothshimmer.stopShimmer()
                 }
-            })
-            bothActivityViewModel.filterDataByType("Rent")
-           /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("rtype", "Rent")
-                .whereEqualTo("status", "Active")
-                .get().addOnSuccessListener { queryDocumentSnapshots ->
-                    list.clear()
-                    for (data in queryDocumentSnapshots.documents) {
-                        val data1 = data.toObject(BothResiClass::class.java)
-                        list.add(data1)
-                    }
-                    adapter12!!.notifyDataSetChanged()
-
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }*/
-        }
-        if (querytype == "Sell") {
-            binding.bothshimmer.startShimmer()
-            binding.bothshimmer.visibility = View.VISIBLE
-
-            Toast.makeText(this, "Property On Sell", Toast.LENGTH_SHORT).show()
-            bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                if(data!=null && data.isNotEmpty()){
-                    adapter12.updateList(ArrayList(data))
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }
-            })
-            bothActivityViewModel.filterDataByType("Sell")
-           /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("rtype", "Sell")
-                .whereEqualTo("status", "Active").get()
-                .addOnSuccessListener { queryDocumentSnapshots ->
-                    list.clear()
-                    for (data in queryDocumentSnapshots.documents) {
-                        val data1 = data.toObject(BothResiClass::class.java)
-                        list.add(data1)
-                    }
-                    adapter12!!.notifyDataSetChanged()
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }*/
-        }
-        if (querytype == "Hostel") {
-            binding.bothshimmer.startShimmer()
-            binding.bothshimmer.visibility = View.VISIBLE
-
-            Toast.makeText(this, "Cot-Base Residency", Toast.LENGTH_SHORT).show()
-            bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                if(data!=null && data.isNotEmpty()){
-                    adapter12.updateList(ArrayList(data))
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }
-            })
-            bothActivityViewModel.filterDataByType("Hostel")
-           /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                .collection("AllData").whereEqualTo("rtype", "Hostel")
-                .whereEqualTo("status", "Active").get()
-                .addOnSuccessListener { queryDocumentSnapshots ->
-                    list.clear()
-                    for (data in queryDocumentSnapshots.documents) {
-                        val data1 = data.toObject(BothResiClass::class.java)
-                        list.add(data1)
-                    }
-                    adapter12!!.notifyDataSetChanged()
-                    binding.bothshimmer.visibility = View.GONE
-                    binding.bothshimmer.stopShimmer()
-                }*/
+            }
+            bothActivityViewModel.filterDataByType(querytype)
         }
 
         binding.showrentswip.setOnRefreshListener {
+            Toast.makeText(this, "$querytype Refreshing", Toast.LENGTH_SHORT).show()
+
             if (querytype == "All") {
-                Toast.makeText(
-                    this@BothResiiActivity,
-                    "All Residency",
-                    Toast.LENGTH_SHORT
-                ).show()
-                bothActivityViewModel.allData.observe(this, Observer { data ->
-                    if(data!=null && data.isNotEmpty()){
+                bothActivityViewModel.allData.observe(this) { data ->
+                    if (!data.isNullOrEmpty()) {
                         adapter12.updateList(ArrayList(data))
-
                     }
-                })
+                }
                 bothActivityViewModel.fetchAllData()
-               /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("status", "Active")
-                    .get().addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                    }*/
             }
-            if (querytype == "Rent") {
-                Toast.makeText(this@BothResiiActivity, "Rent", Toast.LENGTH_SHORT)
-                    .show()
-                bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                    if(data!=null && data.isNotEmpty()){
-                        adapter12.updateList(ArrayList(data))
 
-                    }
-                })
-                bothActivityViewModel.filterDataByType("Rent")
-               /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Rent")
-                    .whereEqualTo("status", "Active")
-                    .get().addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                    }*/
-            }
-            if (querytype == "Sell") {
-                Toast.makeText(this@BothResiiActivity, "Sell", Toast.LENGTH_SHORT)
-                    .show()
-                bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                    if(data!=null && data.isNotEmpty()){
+            if (querytype == "Rent" || querytype == "Sell" || querytype == "Hostel") {
+                bothActivityViewModel.filteredData.observe(this) { data ->
+                    if (!data.isNullOrEmpty()) {
                         adapter12.updateList(ArrayList(data))
-
                     }
-                })
-                bothActivityViewModel.filterDataByType("Sell")
-               /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Sell")
-                    .whereEqualTo("status", "Active").get()
-                    .addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                    }*/
-            }
-            if (querytype == "Hostel") {
-                Toast.makeText(this@BothResiiActivity, "Hostel", Toast.LENGTH_SHORT)
-                    .show()
-                bothActivityViewModel.filteredData.observe(this, Observer { data ->
-                    if(data!=null && data.isNotEmpty()){
-                        adapter12.updateList(ArrayList(data))
-
-                    }
-                })
-                bothActivityViewModel.filterDataByType("Hostel")
-               /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Hostel")
-                    .whereEqualTo("status", "Active").get()
-                    .addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                    }*/
+                }
+                bothActivityViewModel.filterDataByType(querytype)
             }
 
             binding.showrentswip.isRefreshing = false
-            Toast.makeText(this@BothResiiActivity, "Data Refresh", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(this, "Data Refreshed", Toast.LENGTH_SHORT).show()
         }
+
 
 
         binding.searchview1.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -342,21 +181,7 @@ class BothResiiActivity : AppCompatActivity() {
                     }
                 })
                 bothActivityViewModel.filterDataByType("Rent")
-              /*  FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Rent")
-                    .whereEqualTo("status", "Active").get()
-                    .addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                        binding.bothshimmer.visibility = View.GONE
-                        binding.bothshimmer.stopShimmer()
-                    }*/
+
             }
             dsell.setOnClickListener {
                 alertDialog1.dismiss()
@@ -370,21 +195,7 @@ class BothResiiActivity : AppCompatActivity() {
                     }
                 })
                 bothActivityViewModel.filterDataByType("Sell")
-             /*   FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Sell")
-                    .whereEqualTo("status", "Active").get()
-                    .addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                        binding.bothshimmer.visibility = View.GONE
-                        binding.bothshimmer.stopShimmer()
-                    }*/
+
             }
             dhostel.setOnClickListener {
                 alertDialog1.dismiss()
@@ -398,21 +209,7 @@ class BothResiiActivity : AppCompatActivity() {
                     }
                 })
                 bothActivityViewModel.filterDataByType("Hostel")
-              /*  FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("rtype", "Hostel")
-                    .whereEqualTo("status", "Active").get()
-                    .addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                        binding.bothshimmer.visibility = View.GONE
-                        binding.bothshimmer.stopShimmer()
-                    }*/
+
             }
             dall.setOnClickListener {
                 alertDialog1.dismiss()
@@ -426,22 +223,16 @@ class BothResiiActivity : AppCompatActivity() {
                     }
                 })
                 bothActivityViewModel.fetchAllData()
-               /* FirebaseFirestore.getInstance().collection("Nanded").document("NandedCity")
-                    .collection("AllData").whereEqualTo("status", "Active")
-                    .get().addOnSuccessListener { queryDocumentSnapshots ->
-                        list.clear()
-                        for (data in queryDocumentSnapshots.documents) {
-                            val data1 = data.toObject(
-                                BothResiClass::class.java
-                            )
-                            list.add(data1)
-                        }
-                        adapter12!!.notifyDataSetChanged()
-                        binding.bothshimmer.visibility = View.GONE
-                        binding.bothshimmer.stopShimmer()
-                    }*/
+
             }
             alertDialog1.show()
         }
+    }
+
+    private fun setupRecyclerView() {
+        adapter12 = BothResiiAdapter(list, this@BothResiiActivity,showResiViewModel,showSellViewModel,showHostelViewModel,facilityViewModel)
+        binding.bothrec.adapter = adapter12
+        val manager = LinearLayoutManager(this@BothResiiActivity)
+        binding.bothrec.layoutManager = manager
     }
 }
