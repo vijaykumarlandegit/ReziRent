@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.ui.adapter.BothResiiAdapter
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
 import com.resieasy.rezirent.R
+import com.resieasy.rezirent.data.remote.firebase.UnifiedResidencyClass
 
 import com.resieasy.rezirent.databinding.ActivityBothResiiBinding
 import com.resieasy.rezirent.ui.viewmodel.remote.BothActivityViewModel
@@ -32,7 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class BothResiiActivity : AppCompatActivity() {
     lateinit var binding: ActivityBothResiiBinding
 
-    var list: ArrayList<BothResiClass?> = ArrayList()
+    var list: ArrayList<UnifiedResidencyClass?> = ArrayList()
     lateinit var adapter12: BothResiiAdapter
 
     private val showResiViewModel: ShowResiViewModel by viewModels()
@@ -47,8 +48,11 @@ class BothResiiActivity : AppCompatActivity() {
         binding = ActivityBothResiiBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupRecyclerView()
-
+       // adapter12 = BothResiiAdapter(list, this@BothResiiActivity,showResiViewModel,showSellViewModel,showHostelViewModel,facilityViewModel)
+        adapter12 = BothResiiAdapter(list, this@BothResiiActivity,facilityViewModel)
+        binding.bothrec.adapter = adapter12
+        val manager = LinearLayoutManager(this@BothResiiActivity)
+        binding.bothrec.layoutManager = manager
 
 
         val querytype = intent.getStringExtra("topquery")
@@ -60,7 +64,7 @@ class BothResiiActivity : AppCompatActivity() {
             binding.bothshimmer.startShimmer()
             Toast.makeText(this, "All Residency", Toast.LENGTH_SHORT).show()
 
-            bothActivityViewModel.allData.observe(this) { data ->
+            bothActivityViewModel.allData.observe(this@BothResiiActivity) { data ->
                 if (!data.isNullOrEmpty()) {
                     adapter12.updateList(ArrayList(data))
                     binding.bothshimmer.visibility = View.GONE
@@ -71,18 +75,19 @@ class BothResiiActivity : AppCompatActivity() {
         }
 
         if (querytype == "Rent" || querytype == "Sell" || querytype == "Hostel") {
-            binding.bothshimmer.visibility = View.VISIBLE
             binding.bothshimmer.startShimmer()
+            binding.bothshimmer.visibility = View.VISIBLE
             Toast.makeText(this, "$querytype Residency", Toast.LENGTH_SHORT).show()
 
-            bothActivityViewModel.filteredData.observe(this) { data ->
-                if (!data.isNullOrEmpty()) {
+            bothActivityViewModel.filteredData.observe(this@BothResiiActivity, Observer { data ->
+                if(data!=null && data.isNotEmpty()){
                     adapter12.updateList(ArrayList(data))
                     binding.bothshimmer.visibility = View.GONE
                     binding.bothshimmer.stopShimmer()
                 }
-            }
+            })
             bothActivityViewModel.filterDataByType(querytype)
+
         }
 
         binding.showrentswip.setOnRefreshListener {
@@ -126,7 +131,7 @@ class BothResiiActivity : AppCompatActivity() {
                 querySearch.get().addOnSuccessListener { queryDocumentSnapshots ->
                     list.clear()
                     for (data in queryDocumentSnapshots.documents) {
-                        val data1 = data.toObject(BothResiClass::class.java)
+                        val data1 = data.toObject(UnifiedResidencyClass::class.java)
                         val status = data1!!.status
                         if (status == "Active") {
                             list.add(data1)
@@ -223,17 +228,12 @@ class BothResiiActivity : AppCompatActivity() {
                         binding.bothshimmer.stopShimmer()
                     }
                 })
-                bothActivityViewModel.fetchAllData()
+               // bothActivityViewModel.fetchAllData()
 
             }
             alertDialog1.show()
         }
     }
 
-    private fun setupRecyclerView() {
-        adapter12 = BothResiiAdapter(list, this@BothResiiActivity,showResiViewModel,showSellViewModel,showHostelViewModel,facilityViewModel)
-        binding.bothrec.adapter = adapter12
-        val manager = LinearLayoutManager(this@BothResiiActivity)
-        binding.bothrec.layoutManager = manager
-    }
+
 }

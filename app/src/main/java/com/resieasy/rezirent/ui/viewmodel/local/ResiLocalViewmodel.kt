@@ -8,6 +8,7 @@ import com.resieasy.rezirent.data.local.entity.HostelLocalClass
 import com.resieasy.rezirent.data.local.entity.ResiLocalClass
 import com.resieasy.rezirent.data.local.repository.ResiLocalRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,13 +19,13 @@ class ResiLocalViewmodel @Inject constructor(private val repository: ResiLocalRe
     val offlineResi = MutableLiveData<MutableList<ResiLocalClass>>()
 
     fun saveResiToLocalRoom(data: List<ResiLocalClass>) {
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO){
             repository.saveResiToRoom(data)
         }
     }
 
     fun loadResiFromRoom() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getAllResiFlow().collect { list ->
                 offlineResi.postValue(list.toMutableList())
             }

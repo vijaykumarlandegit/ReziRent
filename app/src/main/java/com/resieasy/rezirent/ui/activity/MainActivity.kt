@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -41,10 +42,15 @@ import com.resieasy.rezirent.data.remote.firebase.AddHostelClass
 import com.resieasy.rezirent.data.remote.firebase.SellResiClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.data.local.entity.ResiLocalClass
+import com.resieasy.rezirent.data.local.entity.SellLocalClass
 import com.resieasy.rezirent.databinding.ActivityMainBinding
 import com.resieasy.rezirent.ui.viewmodel.local.ResiLocalViewmodel
+import com.resieasy.rezirent.ui.viewmodel.local.SellLocalViewModel
 import com.resieasy.rezirent.ui.viewmodel.remote.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 
 @AndroidEntryPoint
@@ -67,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     private val hostelLocalViewmodel: HostelLocalViewmodel by viewModels()
     private val mainActivityViewModel: MainActivityViewModel by viewModels()
     private val resiLocalViewmodel: ResiLocalViewmodel by viewModels()
+    private val sellLocalViewmodel: SellLocalViewModel by viewModels()
 
     //  private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     @SuppressLint("UseSupportActionBar")
@@ -150,8 +157,6 @@ class MainActivity : AppCompatActivity() {
             mainActivityViewModel.rent.observe(this) { users: List<AddFlatClass> ->
                 binding.rentshimmer.visibility = View.GONE
                 binding.rentshimmer.stopShimmer()
-
-                Log.d("MainActivity2", "Observed users: $users")
                 adapter2!!.updateList(ArrayList(users))
 
                 val convertedList= users.map {
@@ -161,6 +166,20 @@ class MainActivity : AppCompatActivity() {
 
             }
             mainActivityViewModel.loadRent()
+
+            mainActivityViewModel.sell.observe(this) { users: List<SellResiClass> ->
+                binding.sellshimmer.visibility = View.GONE
+                binding.sellshimmer.stopShimmer()
+                adapter1!!.updateList(ArrayList(users))
+                val converted=users.map{
+                    it.convertToSellLocalClass()
+                }
+                sellLocalViewmodel.uploadListToLocal(converted)
+
+
+            }
+            mainActivityViewModel.loadSell()
+
         } else {
             //offline
             Toast.makeText(this, "Internet Not Available", Toast.LENGTH_SHORT).show()
@@ -187,19 +206,21 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             resiLocalViewmodel.loadResiFromRoom()
+
+            sellLocalViewmodel.offlineSellList.observe(this@MainActivity){
+                list->
+                if (list.isNotEmpty()){
+                    binding.hostelshimmer.visibility = View.GONE
+                    binding.hostelshimmer.stopShimmer()
+                    val converted=list.map{
+                         it.convertToSellResiClass()
+                    }
+                    adapter1!!.updateList(ArrayList(converted))
+                }
+            }
+            sellLocalViewmodel.getSellList()
         }
 
-        mainActivityViewModel.sell.observe(
-            this
-        ) { users: List<SellResiClass> ->
-            binding.sellshimmer.visibility = View.GONE
-            binding.sellshimmer.stopShimmer()
-
-
-            Log.d("MainActivity2", "Observed users: $users")
-            adapter1!!.updateList(ArrayList(users))
-        }
-        mainActivityViewModel.loadSell()
 
 
 
@@ -364,6 +385,66 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val ONESIGNAL_APP_ID = "105b8d9e-51ac-45d4-bed8-c23bbe105b32"
+    }
+
+    private fun SellResiClass.convertToSellLocalClass():SellLocalClass{
+         return SellLocalClass(
+             status = status,
+             rtype = rtype,
+             type = type,
+             subtype = subtype,
+             name = name,
+             lowercase = lowercase,
+             address = address,
+             area = area,
+             oname = oname,
+             number = number,
+             whatsapp = whatsapp,
+             mail = mail,
+             prize = prize,
+             eprize = eprize,
+             more = more,
+             userid = userid,
+             id = id.toString(),
+             size = size,
+             f1 = f1,
+             f2 = f2,
+             f3 = f3,
+             i1 = i1,
+             input = input,
+             latitude = latitude,
+             longitude = longitude,
+             time = time
+         )
+    }private fun SellLocalClass.convertToSellResiClass():SellResiClass{
+         return SellResiClass(
+             status = status,
+             rtype = rtype,
+             type = type,
+             subtype = subtype,
+             name = name,
+             lowercase = lowercase,
+             address = address,
+             area = area,
+             oname = oname,
+             number = number,
+             whatsapp = whatsapp,
+             mail = mail,
+             prize = prize,
+             eprize = eprize,
+             more = more,
+             userid = userid,
+             id = id.toString(),
+             size = size,
+             f1 = f1,
+             f2 = f2,
+             f3 = f3,
+             i1 = i1,
+             input = input,
+             latitude = latitude,
+             longitude = longitude,
+             time = time
+         )
     }
 
     private fun AddFlatClass.toResiLocalClass():ResiLocalClass{

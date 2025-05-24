@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
+import com.resieasy.rezirent.data.remote.firebase.UnifiedResidencyClass
 import com.resieasy.rezirent.data.remote.repository.BothActivityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -15,11 +16,11 @@ class BothActivityViewModel @Inject constructor(
     private val repository: BothActivityRepository
 ) : ViewModel() {
 
-    private val _allData = MutableLiveData<List<BothResiClass>>()//only accessible by viewmodel
-    val allData: LiveData<List<BothResiClass>> get() = _allData //accessible by activity, only read -> get()
+    private val _allData = MutableLiveData<List<UnifiedResidencyClass>>()//only accessible by viewmodel
+    val allData: LiveData<List<UnifiedResidencyClass>> get() = _allData //accessible by activity, only read -> get()
 
-    private val _filteredData = MutableLiveData<List<BothResiClass>>()
-    val filteredData: LiveData<List<BothResiClass>> get() = _filteredData
+    private val _filteredData = MutableLiveData<List<UnifiedResidencyClass>>()
+    val filteredData: LiveData<List<UnifiedResidencyClass>> get() = _filteredData
 
     // Method to fetch all data from Firebase
     fun fetchAllData() {

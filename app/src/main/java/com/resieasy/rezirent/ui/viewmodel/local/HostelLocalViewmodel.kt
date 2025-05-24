@@ -7,6 +7,7 @@ import com.resieasy.rezirent.data.local.entity.HostelLocalClass
 import com.resieasy.rezirent.data.local.repository.HostelLocalRepo
 import com.resieasy.rezirent.data.remote.firebase.AddHostelClass
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +19,7 @@ class HostelLocalViewmodel @Inject constructor(private val repository: HostelLoc
 
 
     fun loadFromRoom() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getAllHostelsFlow().collect { list ->
                 offlineHostels.postValue(list.toMutableList())
             }
@@ -27,7 +28,7 @@ class HostelLocalViewmodel @Inject constructor(private val repository: HostelLoc
 
 
     fun saveToLocalRoom(data: List<HostelLocalClass>) {
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO){
             repository.saveHostelsToRoom(data)
         }
     }

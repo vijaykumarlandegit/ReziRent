@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
 import com.resieasy.rezirent.data.remote.firebase.LikeClass
 import com.resieasy.rezirent.R
+import com.resieasy.rezirent.data.remote.firebase.UnifiedResidencyClass
 import com.resieasy.rezirent.databinding.BothhostelsapleBinding
 import com.resieasy.rezirent.databinding.BothresisampleBinding
 import com.resieasy.rezirent.databinding.BothsellsampleBinding
@@ -27,11 +28,11 @@ import com.squareup.picasso.Picasso
 import java.util.Date
 
 class BothResiiAdapter(
-    var list: ArrayList<BothResiClass?>,
+    var list: ArrayList<UnifiedResidencyClass?>,
     var context: AppCompatActivity,
-    private val showResiViewModel: ShowResiViewModel,
-    private val showSellViewModel: ShowSellViewModel,
-    private val showHostelViewModel: ShowHostelViewModel,
+//    private val showResiViewModel: ShowResiViewModel,
+//    private val showSellViewModel: ShowSellViewModel,
+//    private val showHostelViewModel: ShowHostelViewModel,
     private val facilityViewModel: FacilityViewModel
 )
     :RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -39,7 +40,7 @@ class BothResiiAdapter(
     private var Sell_VIEW_TYPE= 2
     private var HOSTEL_VIEW_TYPE  = 3
 
-    fun updateList(newList : ArrayList<BothResiClass?>){
+    fun updateList(newList : ArrayList<UnifiedResidencyClass?>){
         list=newList
         notifyDataSetChanged()
     }
@@ -101,9 +102,27 @@ class BothResiiAdapter(
                                 .into(viewHolder.binding.bothsampleimage)
                         }
 
-                    showResiViewModel.getResiData(id)
-                    showResiData(showResiViewModel, context, viewHolder)
-                    facilityViewModel.getFacility(id)
+//                    showResiViewModel.getResiData(id)
+//                    showResiData(showResiViewModel, context, viewHolder)
+                    val name = data.name
+                    val resitype = data.subtype
+                    val area = data.area
+                    val address = data.address
+                    val rent = data.rent
+                    val agree = data.period.toInt()
+                    viewHolder.binding.bothsamplename.text = name
+                    viewHolder.binding.bothsampleaddress.text = address
+                    viewHolder.binding.bothsamplearea.text = area
+                    viewHolder.binding.bothsamplesubtype.text = resitype
+                    viewHolder.binding.bothresirenttext.text = rent + "₹/month"
+                    if (agree == 708) {
+                        viewHolder.binding.noagreeview.visibility = View.VISIBLE
+                        viewHolder.binding.yesagreeview.visibility = View.GONE
+                    } else {
+                        viewHolder.binding.noagreeview.visibility = View.GONE
+                        viewHolder.binding.yesagreeview.visibility = View.VISIBLE
+                    }
+                     facilityViewModel.getFacility(id)
                     showFacilityData(facilityViewModel, context, viewHolder)
 
                     viewHolder.binding.resicart.setOnClickListener {
@@ -111,8 +130,6 @@ class BothResiiAdapter(
                         intent.putExtra("id", id)
                         context.startActivity(intent)
                     }
-
-
 
 
                     FirebaseFirestore.getInstance().collection("Like")
@@ -176,10 +193,26 @@ class BothResiiAdapter(
                                 .into(viewHolder.binding.bothsampleimage)
                         }
 
-                    showSellViewModel.getSellData(id)
-                    showSellData(showSellViewModel, context, viewHolder)
+//                    showSellViewModel.getSellData(id)
+//                    showSellData(showSellViewModel, context, viewHolder)
 
+                    val name = data.name
+                    val resitype = data.subtype
+                    val address = data.address
+                    val area = data.area
+                    val prize = data.prize
 
+                    viewHolder.binding.bothsamplename.text = name
+                    viewHolder.binding.bothsampleaddress.text = address
+                    viewHolder.binding.bothsamplearea.text = area
+                    viewHolder.binding.bothsamplesubtype.text = resitype
+                    if (prize != null) {
+                        if (prize.isEmpty()) {
+                            viewHolder.binding.prizeview.visibility = View.GONE
+                        } else {
+                            viewHolder.binding.bothsampleprize.text = prize + "₹"
+                        }
+                    }
 
 
 
@@ -246,8 +279,27 @@ class BothResiiAdapter(
                             Picasso.get().load(firstimage).placeholder(R.drawable.iplaceholdr)
                                 .into(viewHolder.binding.bothsampleimage)
                         }
-                    showHostelViewModel.getHostelData(id)
-                    showHostelData(showHostelViewModel, context, viewHolder)
+//                    showHostelViewModel.getHostelData(id)
+//                    showHostelData(showHostelViewModel, context, viewHolder)
+
+                    val name =data.name
+                    val resitype = data.subtype
+                    val agree = data.period
+                    val address = data.address
+                    val area = data.area
+                    val rent = data.rent
+                    viewHolder.binding.bothsamplename.text = name
+                    viewHolder.binding.bothsampleaddress.text = address
+                    viewHolder.binding.bothsamplearea.text = area
+                    viewHolder.binding.bothsamplesubtype.text = resitype
+                    viewHolder.binding.bothsampleprize.text = rent + "₹/month"
+                    if (agree == 708) {
+                        viewHolder.binding.noagreeview.visibility = View.VISIBLE
+                        viewHolder.binding.yesagreeview.visibility = View.GONE
+                    } else {
+                        viewHolder.binding.noagreeview.visibility = View.GONE
+                        viewHolder.binding.yesagreeview.visibility = View.VISIBLE
+                    }
 
                     facilityViewModel.getFacility(id)
                     showHostelFacility(facilityViewModel, context, viewHolder)

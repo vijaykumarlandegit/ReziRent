@@ -2,6 +2,7 @@ package com.resieasy.rezirent.data.remote.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
+import com.resieasy.rezirent.data.remote.firebase.UnifiedResidencyClass
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -11,24 +12,7 @@ class BothActivityRepository @Inject constructor(
     private val firebaseFirestore: FirebaseFirestore
 ) {
 
-//    // Fetch all data from Firebase Firestore
-//    suspend fun getAllData(): List<BothResiClass> {
-//        val querySnapshot = firebaseFirestore
-//            .collection("Nanded")
-//            .document("NandedCity")
-//            .collection("AllData")
-//            .whereEqualTo("status", "Active")
-//            .get()
-//            .await() // .await() makes it suspendable, so it doesn’t block the main thread.
-//
-//        return querySnapshot.documents.mapNotNull { document ->
-//            document.toObject(BothResiClass::class.java)
-//        }
-//        // return documentSnapshot.toObject(BothResiClass::class.java)
-//    }
-
-
-    suspend fun getAllData(): List<BothResiClass> {
+    suspend fun getAllData(): List<UnifiedResidencyClass> {
         return try {
             val querySnapshot = firebaseFirestore
                 .collection("Nanded")
@@ -39,10 +23,10 @@ class BothActivityRepository @Inject constructor(
                 .await()
 
             querySnapshot.documents.mapNotNull { document ->
-                document.toObject(BothResiClass::class.java)
+                document.toObject(UnifiedResidencyClass::class.java)
             }
         } catch (e: Exception) {
-            emptyList() // Return empty list if something goes wrong
+            emptyList()
         }
     }
 

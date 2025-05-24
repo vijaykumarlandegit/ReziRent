@@ -6,7 +6,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.local.database.HostelLocalDatabase
 import com.resieasy.rezirent.data.local.dao.HostelDao
 import com.resieasy.rezirent.data.local.dao.ResiDao
+import com.resieasy.rezirent.data.local.dao.SellDao
 import com.resieasy.rezirent.data.local.database.ResiLocalDatabase
+import com.resieasy.rezirent.data.local.database.SellLocalDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,6 +50,41 @@ object AppModule {
     fun provideResidencyDao(database: ResiLocalDatabase): ResiDao {
         return database.resiDao()
     }
+
+
+    @Provides
+    @Singleton
+    fun giveSellLocalDatabase(@ApplicationContext context: Context):SellLocalDatabase{
+        return Room.databaseBuilder(context,SellLocalDatabase::class.java,"sellRoomDB").build()
+    }
+
+    @Provides
+    fun giveSellDao(database:SellLocalDatabase ):SellDao{
+        return database.getSellDao()
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
