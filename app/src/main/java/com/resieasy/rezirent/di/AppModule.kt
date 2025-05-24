@@ -5,6 +5,8 @@ import androidx.room.Room
 import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.local.database.HostelLocalDatabase
 import com.resieasy.rezirent.data.local.dao.HostelDao
+import com.resieasy.rezirent.data.local.dao.ResiDao
+import com.resieasy.rezirent.data.local.database.ResiLocalDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,22 +29,29 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext appContext: Context): HostelLocalDatabase {
-        return Room.databaseBuilder(appContext, HostelLocalDatabase::class.java, "hostelRoomDB").build()
+    fun provideHostelDatabase(@ApplicationContext appContext: Context): HostelLocalDatabase {
+        return Room.databaseBuilder(appContext, HostelLocalDatabase::class.java, "hostelRoomDBB").build()
     }
 
     @Provides
-    fun provideResidencyDao(database: HostelLocalDatabase): HostelDao {
+    fun provideHostelDao(database: HostelLocalDatabase): HostelDao {
         return database.hostelDao()
     }
 
-//
-//    @Provides
-//    @Singleton
-//    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-//        return Room.databaseBuilder(context, AppDatabase::class.java, "my_db").build()
-//    }
-//
+    @Provides
+    @Singleton
+    fun provideResiDatabase(@ApplicationContext appContext: Context): ResiLocalDatabase {
+        return Room.databaseBuilder(appContext, ResiLocalDatabase::class.java, "resiRoomDB").build()
+    }
+
+    @Provides
+    fun provideResidencyDao(database: ResiLocalDatabase): ResiDao {
+        return database.resiDao()
+    }
+
+
+
+
 
 
 

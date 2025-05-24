@@ -25,10 +25,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.notification.FcmNotificationsSender
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.FacilityViewModel
-import com.resieasy.rezirent.ViewModel.RulesViewModel
-import com.resieasy.rezirent.ViewModel.ShowResiViewModel
 import com.resieasy.rezirent.databinding.ActivityShowResidencyDataBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.FacilityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.RulesViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowResiViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 @AndroidEntryPoint
@@ -47,7 +47,7 @@ class ShowResidencyDataActivity : AppCompatActivity() {
     var mInterstitialAdwhats: InterstitialAd? = null
      var ad_dialog: ProgressDialog? = null
 
-    private val showResiViewModel:ShowResiViewModel by viewModels()
+    private val showResiViewModel: ShowResiViewModel by viewModels()
     private val facilityViewModel: FacilityViewModel by viewModels()
     private val rulesViewModel: RulesViewModel by viewModels()
 

@@ -20,13 +20,13 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.EditHostelDataActivity
-import com.resieasy.rezirent.Activity.ProfileActivity
-import com.resieasy.rezirent.Activity.ShowHostelDataActivity
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.HostelownsampleBinding
+import com.resieasy.rezirent.ui.activity.EditHostelDataActivity
+import com.resieasy.rezirent.ui.activity.ProfileActivity
+import com.resieasy.rezirent.ui.activity.ShowHostelDataActivity
 import com.squareup.picasso.Picasso
 
 class HostelOwnAdapter(var context: Context?, var list: ArrayList<SingleIDClass?>) :

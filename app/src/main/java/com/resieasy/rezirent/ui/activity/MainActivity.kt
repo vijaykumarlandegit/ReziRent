@@ -28,6 +28,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.PropertyName
 
 import com.resieasy.rezirent.data.local.entity.HostelLocalClass
 import com.resieasy.rezirent.ui.viewmodel.local.HostelLocalViewmodel
@@ -39,32 +40,35 @@ import com.resieasy.rezirent.data.remote.firebase.AddFlatClass
 import com.resieasy.rezirent.data.remote.firebase.AddHostelClass
 import com.resieasy.rezirent.data.remote.firebase.SellResiClass
 import com.resieasy.rezirent.R
- import com.resieasy.rezirent.databinding.ActivityMainBinding
+import com.resieasy.rezirent.data.local.entity.ResiLocalClass
+import com.resieasy.rezirent.databinding.ActivityMainBinding
+import com.resieasy.rezirent.ui.viewmodel.local.ResiLocalViewmodel
 import com.resieasy.rezirent.ui.viewmodel.remote.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-   lateinit var binding: ActivityMainBinding 
+    lateinit var binding: ActivityMainBinding
     var auth: FirebaseAuth? = null
 
-     private var list1: ArrayList<SellResiClass>? = null
+    private var list1: ArrayList<SellResiClass>? = null
     private var list2: ArrayList<AddFlatClass>? = null
     private var list3: ArrayList<AddHostelClass>? = null
 
     var adapter: BothResiiAdapter? = null
 
-   private var adapter1: SellHoriAdapter? = null
-   private var adapter2: RentHoriAdapter? = null
-   private var adapter3: HostelHoriAdapter? = null
-   private var UPDATE_CODE: Int = 8888
+    private var adapter1: SellHoriAdapter? = null
+    private var adapter2: RentHoriAdapter? = null
+    private var adapter3: HostelHoriAdapter? = null
+    private var UPDATE_CODE: Int = 8888
     private var appUpdateManager: AppUpdateManager? = null
 
     private val hostelLocalViewmodel: HostelLocalViewmodel by viewModels()
-     private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val resiLocalViewmodel: ResiLocalViewmodel by viewModels()
 
-   //  private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
+    //  private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,60 +130,64 @@ class MainActivity : AppCompatActivity() {
         binding.sellshimmer.startShimmer()
 
 
-      /*  val firebaseFirestore = FirebaseFirestore.getInstance()
-        val repository = MainActivityRepository(firebaseFirestore)
-        mainActivityViewModel = ViewModelProvider(this, MainActivityViewModelFactory(repository)).get(MainActivityViewModel::class.java)
-*/
+        if (isInternetAvailable(this)) {
+            Toast.makeText(this, "Internet Available", Toast.LENGTH_SHORT).show()
+            //online
+            mainActivityViewModel.hostePG.observe(this) { users: List<AddHostelClass>? ->
+                if (users != null) {
+                    binding.hostelshimmer.visibility = View.GONE
+                    binding.hostelshimmer.stopShimmer()
+                    adapter3!!.updateList(ArrayList(users))
 
+                    val convertedList = users.map { it.toHostelRoomDBClass() }
+                    hostelLocalViewmodel.saveToLocalRoom(convertedList)
+                } else {
+                    Log.d("MainActivity2", "No users observed.")
+                }
+            }
+            mainActivityViewModel.loadHostelPG()
 
-       if (isInternetAvailable(this)) {
-           Toast.makeText(this, "Internet Available", Toast.LENGTH_SHORT).show()
-           //online
-           mainActivityViewModel.hostePG.observe(this) { users: List<AddHostelClass>? ->
-               if (users != null) {
-                   binding.hostelshimmer.visibility = View.GONE
-                   binding.hostelshimmer.stopShimmer()
-                   adapter3!!.updateList(ArrayList(users))
+            mainActivityViewModel.rent.observe(this) { users: List<AddFlatClass> ->
+                binding.rentshimmer.visibility = View.GONE
+                binding.rentshimmer.stopShimmer()
 
-                   val convertedList = users.map { it.toHostelRoomDBClass() }
-                   hostelLocalViewmodel.saveToLocalRoom(convertedList)
-               } else {
-                   Log.d("MainActivity2", "No users observed.")
-               }
-           }
-           mainActivityViewModel.loadHostelPG()
-       } else {
-           //offline
-           Toast.makeText(this, "Internet Not Available", Toast.LENGTH_SHORT).show()
-           hostelLocalViewmodel.offlineHostels.observe(this) { list ->
-               if (!list.isNullOrEmpty()) {
-                   binding.hostelshimmer.visibility = View.GONE
-                   binding.hostelshimmer.stopShimmer()
-                   val convertedList = list.map { it.toAddHostelClass() }
-                   adapter3!!.updateList(ArrayList(convertedList))
+                Log.d("MainActivity2", "Observed users: $users")
+                adapter2!!.updateList(ArrayList(users))
+
+                val convertedList= users.map {
+                    it.toResiLocalClass()
+                }
+                resiLocalViewmodel.saveResiToLocalRoom(convertedList)
+
+            }
+            mainActivityViewModel.loadRent()
+        } else {
+            //offline
+            Toast.makeText(this, "Internet Not Available", Toast.LENGTH_SHORT).show()
+            hostelLocalViewmodel.offlineHostels.observe(this) { list ->
+                if (!list.isNullOrEmpty()) {
+                    binding.hostelshimmer.visibility = View.GONE
+                    binding.hostelshimmer.stopShimmer()
+                    val convertedList = list.map { it.toAddHostelClass() }
+                    adapter3!!.updateList(ArrayList(convertedList))
 
                 }
-           }
-           hostelLocalViewmodel.loadFromRoom()
-       }
+            }
+            hostelLocalViewmodel.loadFromRoom()
 
+            resiLocalViewmodel.offlineResi.observe(this@MainActivity){
+                list->
+                if (list.isNotEmpty()){
+                    binding.hostelshimmer.visibility = View.GONE
+                    binding.hostelshimmer.stopShimmer()
 
+                    val converted=list.map{it.toAddFlatClass()}
+                    adapter2!!.updateList(ArrayList(converted))
 
-
-
-
-
-        mainActivityViewModel.rent.observe(
-            this
-        ) { users: List<AddFlatClass> ->
-            binding.rentshimmer.visibility = View.GONE
-            binding.rentshimmer.stopShimmer()
-
-            Log.d("MainActivity2", "Observed users: $users")
-            adapter2!!.updateList(ArrayList(users))
+                }
+            }
+            resiLocalViewmodel.loadResiFromRoom()
         }
-        mainActivityViewModel.loadRent()
-
 
         mainActivityViewModel.sell.observe(
             this
@@ -247,7 +255,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isInternetAvailable(context: MainActivity): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -356,7 +365,75 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val ONESIGNAL_APP_ID = "105b8d9e-51ac-45d4-bed8-c23bbe105b32"
     }
-    fun HostelLocalClass.toAddHostelClass(): AddHostelClass {
+
+    private fun AddFlatClass.toResiLocalClass():ResiLocalClass{
+        return ResiLocalClass(
+            status = status,
+            rtype = rtype,
+            type = type,
+            subtype = subtype,
+            name = name,
+            lowercase = lowercase,
+            address = address,
+            area = area,
+            oname = oname,
+            number = number,
+            whatsapp = whatsapp,
+            mail = mail,
+            rent = rent,
+            erent = erent,
+            deposit = deposit,
+            extra = extra,
+            more = more,
+            policy = policy,
+            userid = userid,
+            id = id.toString(),
+            f1 = f1,
+            f2 = f2,
+            f3 = f3,
+            i1 = i1,
+            input = input,
+            period = period,
+            latitude = latitude,
+            longitude = longitude,
+            time = time
+        )
+    } private fun ResiLocalClass.toAddFlatClass():AddFlatClass{
+        return AddFlatClass(
+            status = status,
+            rtype = rtype,
+            type = type,
+            subtype = subtype,
+            name = name,
+            lowercase = lowercase,
+            address = address,
+            area = area,
+            oname = oname,
+            number = number,
+            whatsapp = whatsapp,
+            mail = mail,
+            rent = rent,
+            erent = erent,
+            deposit = deposit,
+            extra = extra,
+            more = more,
+            policy = policy,
+            userid = userid,
+            id = id.toString(),
+            f1 = f1,
+            f2 = f2,
+            f3 = f3,
+            i1 = i1,
+            input = input,
+            period = period,
+            latitude = latitude,
+            longitude = longitude,
+            time = time
+        )
+    }
+
+
+    private fun HostelLocalClass.toAddHostelClass(): AddHostelClass {
         return AddHostelClass(
             mail = mail,
             status = status,
@@ -390,7 +467,9 @@ class MainActivity : AppCompatActivity() {
             longitude = longitude,
             time = time
         )
-    } fun AddHostelClass.toHostelRoomDBClass(): HostelLocalClass {
+    }
+
+    private fun AddHostelClass.toHostelRoomDBClass(): HostelLocalClass {
         return HostelLocalClass(
             mail = mail.toString(),
             status = status,
@@ -413,7 +492,7 @@ class MainActivity : AppCompatActivity() {
             gopen = gopen,
             gclose = gclose,
             userid = userid,
-            id = id,
+            id = id.toString(),
             f1 = f1,
             f2 = f2,
             f3 = f3,

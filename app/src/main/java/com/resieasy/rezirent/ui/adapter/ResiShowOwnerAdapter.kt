@@ -20,13 +20,13 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.EditResidencyDataActivity
-import com.resieasy.rezirent.Activity.ProfileActivity
-import com.resieasy.rezirent.Activity.ShowResidencyDataActivity
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.ShowresidencysampleBinding
+import com.resieasy.rezirent.ui.activity.EditResidencyDataActivity
+import com.resieasy.rezirent.ui.activity.ProfileActivity
+import com.resieasy.rezirent.ui.activity.ShowResidencyDataActivity
 import com.squareup.picasso.Picasso
 
 class ResiShowOwnerAdapter(var list: ArrayList<SingleIDClass?>, var context: Context?) :

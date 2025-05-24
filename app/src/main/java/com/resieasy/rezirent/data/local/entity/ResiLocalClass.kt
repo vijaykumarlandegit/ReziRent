@@ -5,16 +5,15 @@ import androidx.room.PrimaryKey
 import com.google.firebase.firestore.PropertyName
 import javax.annotation.Nonnull
 
-@Entity(tableName = "hostelRoomDBB")
-data class HostelLocalClass (
+@Entity(tableName = "resiRoomDB")
+data class ResiLocalClass(
     @PrimaryKey
     @Nonnull
     var id: String,
-    var mail: String? = null,
     var status: String? = null,
     var rtype: String? = null,
     var type: String? = null,
-    var subtype: String? =null,
+    var subtype: String? = null,
     var name: String = "",
     var lowercase: String = "",
     var address: String = "",
@@ -22,17 +21,16 @@ data class HostelLocalClass (
     var oname: String = "",
     var number: String? = null,
     var whatsapp: String? = null,
+    var mail: String? = null,
     var rent: String = "",
     var erent: String = "",
     var deposit: String = "",
     var extra: String = "",
     var more: String = "",
     var policy: String = "",
-    var gopen: String = "",
-    var gclose: String = "",
     var userid: String? = null,
-    var f1: String = "",
-    var f2: String = "",
+     var f1: String = "",
+    var f2: String =  "",
     var f3: String = "",
     var i1: Int = 0,
     @get:PropertyName("in") var input: Int = 0,

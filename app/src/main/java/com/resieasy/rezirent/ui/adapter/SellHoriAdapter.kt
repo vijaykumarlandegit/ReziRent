@@ -9,11 +9,11 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.ShowSellDataActivity
 import com.resieasy.rezirent.data.remote.firebase.LikeClass
 import com.resieasy.rezirent.data.remote.firebase.SellResiClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.HomesellhorizontalsampleBinding
+import com.resieasy.rezirent.ui.activity.ShowSellDataActivity
 import com.squareup.picasso.Picasso
 import java.util.Date
 

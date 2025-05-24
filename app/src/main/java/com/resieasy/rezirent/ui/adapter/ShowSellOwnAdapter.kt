@@ -20,13 +20,13 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.EditSellDataActivity
-import com.resieasy.rezirent.Activity.ProfileActivity
-import com.resieasy.rezirent.Activity.ShowSellDataActivity
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.ShowsellownersampleBinding
+import com.resieasy.rezirent.ui.activity.EditSellDataActivity
+import com.resieasy.rezirent.ui.activity.ProfileActivity
+import com.resieasy.rezirent.ui.activity.ShowSellDataActivity
 import com.squareup.picasso.Picasso
 
 class ShowSellOwnAdapter(var context: Context?, var list: ArrayList<SingleIDClass?>) :

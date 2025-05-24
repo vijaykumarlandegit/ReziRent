@@ -4,14 +4,15 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.resieasy.rezirent.data.local.entity.HostelLocalClass
+import com.resieasy.rezirent.data.local.entity.ResiLocalClass
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface HostelDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllHostels(hostels: List<HostelLocalClass>)
+interface ResiDao {
 
-    @Query("SELECT * FROM hostelRoomDBB")
-    fun getAllHostels(): Flow<List<HostelLocalClass>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertResi(resi: List<ResiLocalClass>)
+
+    @Query("SELECT * FROM resiRoomDB")
+    fun getResi(): Flow<List<ResiLocalClass>>
 }

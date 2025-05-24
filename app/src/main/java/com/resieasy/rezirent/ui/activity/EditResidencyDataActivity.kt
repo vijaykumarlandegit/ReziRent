@@ -26,10 +26,10 @@ import com.resieasy.rezirent.ui.adapter.MultioldImageAdapter
 import com.resieasy.rezirent.ui.adapter.MultipleImageAdapter
 import com.resieasy.rezirent.data.remote.firebase.AddFlatClass
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.FacilityViewModel
-import com.resieasy.rezirent.ViewModel.RulesViewModel
-import com.resieasy.rezirent.ViewModel.ShowResiViewModel
 import com.resieasy.rezirent.databinding.ActivityEditResidencyDataBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.FacilityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.RulesViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowResiViewModel
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.Date

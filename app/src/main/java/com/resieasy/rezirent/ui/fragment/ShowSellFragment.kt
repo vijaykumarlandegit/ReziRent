@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.resieasy.rezirent.Activity.AddSellResiActivity
 import com.resieasy.rezirent.ui.adapter.ShowSellOwnAdapter
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.databinding.FragmentShowSellBinding
+import com.resieasy.rezirent.ui.activity.AddSellResiActivity
 
 class ShowSellFragment : Fragment() {
     var binding: FragmentShowSellBinding? = null

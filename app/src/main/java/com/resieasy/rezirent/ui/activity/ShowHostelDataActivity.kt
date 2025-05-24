@@ -25,10 +25,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.notification.FcmNotificationsSender
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.FacilityViewModel
-import com.resieasy.rezirent.ViewModel.RulesViewModel
-import com.resieasy.rezirent.ViewModel.ShowHostelViewModel
 import com.resieasy.rezirent.databinding.ActivityShowHostelDataBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.FacilityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.RulesViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowHostelViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 @AndroidEntryPoint

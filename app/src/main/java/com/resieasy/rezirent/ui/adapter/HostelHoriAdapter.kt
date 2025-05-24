@@ -9,11 +9,11 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.ShowHostelDataActivity
-import com.resieasy.rezirent.data.remote.firebase.AddHostelClass
+ import com.resieasy.rezirent.data.remote.firebase.AddHostelClass
 import com.resieasy.rezirent.data.remote.firebase.LikeClass
 import com.resieasy.rezirent.R
 import com.resieasy.rezirent.databinding.HostelhorisampleBinding
+import com.resieasy.rezirent.ui.activity.ShowHostelDataActivity
 import com.squareup.picasso.Picasso
 import java.util.Date
 

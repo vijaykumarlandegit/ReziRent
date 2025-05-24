@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.resieasy.rezirent.Activity.AddHostelActivity
 import com.resieasy.rezirent.ui.adapter.HostelOwnAdapter
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.databinding.FragmentShowHostelBinding
+import com.resieasy.rezirent.ui.activity.AddHostelActivity
 
 class ShowHostelFragment : Fragment() {
     var list123: ArrayList<SingleIDClass?> = ArrayList()

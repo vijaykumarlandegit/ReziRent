@@ -3,10 +3,11 @@ package com.resieasy.rezirent.ui.adapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.resieasy.rezirent.Fragment.ShowHostelFragment
-import com.resieasy.rezirent.Fragment.ShowRentFragment
-import com.resieasy.rezirent.Fragment.ShowSellFragment
-import com.resieasy.rezirent.Fragment.ShowlikedFragment
+import com.resieasy.rezirent.ui.fragment.ShowHostelFragment
+import com.resieasy.rezirent.ui.fragment.ShowRentFragment
+import com.resieasy.rezirent.ui.fragment.ShowSellFragment
+import com.resieasy.rezirent.ui.fragment.ShowlikedFragment
+
 
 class AdapterViewPager(fragmentActivity: FragmentActivity) :
     FragmentStateAdapter(fragmentActivity) {

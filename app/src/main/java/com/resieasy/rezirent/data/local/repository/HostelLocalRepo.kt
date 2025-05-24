@@ -8,9 +8,11 @@ import javax.inject.Inject
 
 class HostelLocalRepo @Inject constructor(private val dao: HostelDao) {
 
-    fun getAllHostelsFlow(): Flow<List<HostelLocalClass>> = dao.getAllHostels()
-
     suspend fun saveHostelsToRoom(data: List<HostelLocalClass>) {
         dao.insertAllHostels(data)
     }
+
+    fun getAllHostelsFlow(): Flow<List<HostelLocalClass>> = dao.getAllHostels()
+
+
 }

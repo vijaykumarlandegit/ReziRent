@@ -10,19 +10,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.resieasy.rezirent.Activity.ShowHostelDataActivity
-import com.resieasy.rezirent.Activity.ShowResidencyDataActivity
-import com.resieasy.rezirent.Activity.ShowSellDataActivity
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
 import com.resieasy.rezirent.data.remote.firebase.LikeClass
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.FacilityViewModel
-import com.resieasy.rezirent.ViewModel.ShowHostelViewModel
-import com.resieasy.rezirent.ViewModel.ShowResiViewModel
-import com.resieasy.rezirent.ViewModel.ShowSellViewModel
 import com.resieasy.rezirent.databinding.BothhostelsapleBinding
 import com.resieasy.rezirent.databinding.BothresisampleBinding
 import com.resieasy.rezirent.databinding.BothsellsampleBinding
+import com.resieasy.rezirent.ui.activity.ShowHostelDataActivity
+import com.resieasy.rezirent.ui.activity.ShowResidencyDataActivity
+import com.resieasy.rezirent.ui.activity.ShowSellDataActivity
+import com.resieasy.rezirent.ui.viewmodel.remote.FacilityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowHostelViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowResiViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowSellViewModel
 import com.squareup.picasso.Picasso
 import java.util.Date
 

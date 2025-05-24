@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.resieasy.rezirent.Activity.AddResidencyActivity
 import com.resieasy.rezirent.ui.adapter.ResiShowOwnerAdapter
 import com.resieasy.rezirent.data.remote.firebase.SingleIDClass
 import com.resieasy.rezirent.databinding.FragmentShowRentBinding
+import com.resieasy.rezirent.ui.activity.AddResidencyActivity
 
 class ShowRentFragment : Fragment() {
     var binding: FragmentShowRentBinding? = null

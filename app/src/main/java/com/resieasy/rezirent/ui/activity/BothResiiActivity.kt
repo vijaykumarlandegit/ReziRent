@@ -19,12 +19,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.ui.adapter.BothResiiAdapter
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.BothActivityViewModel
-import com.resieasy.rezirent.ViewModel.FacilityViewModel
-import com.resieasy.rezirent.ViewModel.ShowHostelViewModel
-import com.resieasy.rezirent.ViewModel.ShowResiViewModel
-import com.resieasy.rezirent.ViewModel.ShowSellViewModel
+
 import com.resieasy.rezirent.databinding.ActivityBothResiiBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.BothActivityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.FacilityViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowHostelViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowResiViewModel
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowSellViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -38,7 +39,7 @@ class BothResiiActivity : AppCompatActivity() {
     private val showSellViewModel: ShowSellViewModel by viewModels()
     private val showHostelViewModel: ShowHostelViewModel by viewModels()
     private val facilityViewModel: FacilityViewModel by viewModels()
-    private  val bothActivityViewModel:BothActivityViewModel by viewModels()
+    private  val bothActivityViewModel: BothActivityViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

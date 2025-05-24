@@ -25,8 +25,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.data.remote.firebase.LeadClass
 import com.resieasy.rezirent.notification.FcmNotificationsSender
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.ShowSellViewModel
-import com.resieasy.rezirent.databinding.ActivityShowSellDataBinding
+ import com.resieasy.rezirent.databinding.ActivityShowSellDataBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowSellViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 

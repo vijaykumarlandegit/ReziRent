@@ -26,8 +26,8 @@ import com.resieasy.rezirent.ui.adapter.MultioldImageAdapter
 import com.resieasy.rezirent.ui.adapter.MultipleImageAdapter
 import com.resieasy.rezirent.data.remote.firebase.SellResiClass
 import com.resieasy.rezirent.R
-import com.resieasy.rezirent.ViewModel.ShowSellViewModel
-import com.resieasy.rezirent.databinding.ActivityEditSellDataBinding
+ import com.resieasy.rezirent.databinding.ActivityEditSellDataBinding
+import com.resieasy.rezirent.ui.viewmodel.remote.ShowSellViewModel
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.Date
