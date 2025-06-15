@@ -51,12 +51,32 @@ class SignInActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
         // 2. Initialize ActivityResultLauncher
-        signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        signInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
             if (result.resultCode == RESULT_OK) {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                try {
-                    val account = task.getResult(ApiException::class.java)
-                    account?.idToken?.let { firebaseAuthWithGoogle(it) }
+                 try {
+                    val account = GoogleSignIn.getSignedInAccountFromIntent(result.data).result
+                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                    auth.signInWithCredential(credential)
+                        .addOnCompleteListener { task ->
+                            hideLoadingDialog()
+                            if (task.isSuccessful) {
+                                val user = auth.currentUser
+                                val acct = GoogleSignIn.getLastSignedInAccount(this)
+                                acct?.let {
+                                    personEmail = user?.email
+                                    personPhoto = it.photoUrl
+
+                                    FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
+                                        val token = tokenTask.result
+                                        saveUserToFirestore(token)
+                                    }
+                                }
+                            } else {
+                                Log.w("TAG", "signInWithCredential:failure", task.exception)
+                            }
+                        }
                 } catch (e: ApiException) {
                     Log.w("TAG", "Google sign in failed", e)//message+ detailed error
                 }
@@ -72,29 +92,7 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-    // 4. Firebase Auth
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                hideLoadingDialog()
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    val acct = GoogleSignIn.getLastSignedInAccount(this)
-                    acct?.let {
-                        personEmail = user?.email
-                        personPhoto = it.photoUrl
 
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
-                            val token = tokenTask.result
-                            saveUserToFirestore(token)
-                        }
-                    }
-                } else {
-                    Log.w("TAG", "signInWithCredential:failure", task.exception)
-                }
-            }
-    }
     private fun saveUserToFirestore(token: String?) {
         val userId = auth.uid ?: return
 

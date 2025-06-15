@@ -14,4 +14,5 @@ interface HostelDao {
 
     @Query("SELECT * FROM hostelRoomDBB")
     fun getAllHostels(): Flow<List<HostelLocalClass>>
+
 }

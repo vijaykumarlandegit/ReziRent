@@ -16,7 +16,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-//MIISCC
 @Module//Marks this object as a Hilt module, which means it contains methods that provide dependencies.
 @InstallIn(SingletonComponent::class)//Tells Hilt where to install this module.
 //SingletonComponent means the provided dependencies will be scoped to the application. and its single instance
@@ -36,9 +35,11 @@ object AppModule {
     }
 
     @Provides
+    @Singleton
     fun provideHostelDao(database: HostelLocalDatabase): HostelDao {
         return database.hostelDao()
     }
+
 
     @Provides
     @Singleton
@@ -47,6 +48,7 @@ object AppModule {
     }
 
     @Provides
+    @Singleton
     fun provideResidencyDao(database: ResiLocalDatabase): ResiDao {
         return database.resiDao()
     }
@@ -59,6 +61,7 @@ object AppModule {
     }
 
     @Provides
+    @Singleton
     fun giveSellDao(database:SellLocalDatabase ):SellDao{
         return database.getSellDao()
 

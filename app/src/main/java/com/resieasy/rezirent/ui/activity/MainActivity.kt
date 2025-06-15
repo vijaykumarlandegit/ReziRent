@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     private var list1: ArrayList<SellResiClass>? = null
     private var list2: ArrayList<AddFlatClass>? = null
-    private var list3: ArrayList<AddHostelClass>? = null
+    private var list3: ArrayList<AddHostelClass> = ArrayList(emptyList())
 
     var adapter: BothResiiAdapter? = null
 
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         //onesignal()
 
 
-        list1 = ArrayList()
+        list1 = ArrayList(emptyList())
         adapter1 = SellHoriAdapter(this@MainActivity, list1!!)
         binding.sellhorihomerec.adapter = adapter1
 
@@ -121,8 +121,7 @@ class MainActivity : AppCompatActivity() {
             LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
         binding.renthorihomerec.layoutManager = layoutManager2
 
-        list3 = ArrayList()
-        adapter3 = HostelHoriAdapter(this@MainActivity, list3!!)
+         adapter3 = HostelHoriAdapter(this@MainActivity, list3!!)
         binding.hostelhorihomerec.adapter = adapter3
 
         val layoutManager3 =
@@ -140,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         if (isInternetAvailable(this)) {
             Toast.makeText(this, "Internet Available", Toast.LENGTH_SHORT).show()
             //online
-            mainActivityViewModel.hostePG.observe(this) { users: List<AddHostelClass>? ->
+            mainActivityViewModel.hostePG.observe(this) { users ->
                 if (users != null) {
                     binding.hostelshimmer.visibility = View.GONE
                     binding.hostelshimmer.stopShimmer()

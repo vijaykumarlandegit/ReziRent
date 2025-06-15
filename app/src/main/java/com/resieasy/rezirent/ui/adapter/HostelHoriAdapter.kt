@@ -16,7 +16,7 @@ import com.resieasy.rezirent.databinding.HostelhorisampleBinding
 import com.resieasy.rezirent.ui.activity.ShowHostelDataActivity
 import com.squareup.picasso.Picasso
 import java.util.Date
-
+//ListAdapter uses DiffUtil to update only changed items.
 class HostelHoriAdapter(var context: Context, var list: ArrayList<AddHostelClass>) :
     RecyclerView.Adapter<HostelHoriAdapter.ViewHolder>() {
     fun updateList(newList: ArrayList<AddHostelClass>) {
@@ -35,7 +35,10 @@ class HostelHoriAdapter(var context: Context, var list: ArrayList<AddHostelClass
     }
 
     override fun getItemViewType(position: Int): Int {
-        return super.getItemViewType(position)
+        return getItemViewType(position)
+    }
+    override fun getItemCount(): Int {
+        return list.size
     }
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = list[position]
@@ -124,9 +127,8 @@ class HostelHoriAdapter(var context: Context, var list: ArrayList<AddHostelClass
         }
     }
 
-    override fun getItemCount(): Int {
-        return list.size
-    }
+
 
 
 }
+
