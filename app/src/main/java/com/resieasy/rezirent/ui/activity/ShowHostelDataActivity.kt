@@ -82,9 +82,6 @@ class ShowHostelDataActivity : AppCompatActivity() {
             toast("Something is wrong")
         }
 
-
-
-
         binding.cmscontact.setOnClickListener {
             if (mInterstitialAdcall != null) {
                 ad_dialog!!.show()
@@ -155,6 +152,7 @@ class ShowHostelDataActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+
         if (id==null){
             toast("Something is wrong")
         }else{

@@ -30,9 +30,6 @@ import java.util.Date
 class BothResiiAdapter(
     var list: ArrayList<UnifiedResidencyClass?>,
     var context: AppCompatActivity,
-//    private val showResiViewModel: ShowResiViewModel,
-//    private val showSellViewModel: ShowSellViewModel,
-//    private val showHostelViewModel: ShowHostelViewModel,
     private val facilityViewModel: FacilityViewModel
 )
     :RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -74,14 +71,17 @@ class BothResiiAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (list[position]?.rtype == "Rent") {
-            RESI_VIEW_TYPE
-        } else if (list[position]?.rtype == "Sell") {
-            Sell_VIEW_TYPE
-        } else {
-            HOSTEL_VIEW_TYPE
+        return when(list[position]?.rtype){
+            "Rent"->RESI_VIEW_TYPE
+            "Sell"->Sell_VIEW_TYPE
+            "Hostel"->HOSTEL_VIEW_TYPE
+            else ->  RESI_VIEW_TYPE
         }
     }
+    override fun getItemCount(): Int {
+        return list.size
+    }
+
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
         val data = list[position]
@@ -742,10 +742,6 @@ class BothResiiAdapter(
 
 
 
-
-    override fun getItemCount(): Int {
-        return list.size
-    }
 
 
 
