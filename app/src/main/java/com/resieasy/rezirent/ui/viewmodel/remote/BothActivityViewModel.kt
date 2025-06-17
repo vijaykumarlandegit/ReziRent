@@ -16,28 +16,35 @@ class BothActivityViewModel @Inject constructor(
     private val repository: BothActivityRepository
 ) : ViewModel() {
 
-    private val _allData = MutableLiveData<List<UnifiedResidencyClass>>()//only accessible by viewmodel
-    val allData: LiveData<List<UnifiedResidencyClass>> get() = _allData //accessible by activity, only read -> get()
+    private val _allData = MutableLiveData<List<UnifiedResidencyClass>>()
+    val allData: LiveData<List<UnifiedResidencyClass>> get() = _allData
+
+    private val fullList = mutableListOf<UnifiedResidencyClass>()
+    private var isLoading = false
+
+    fun fetchNextPage() {
+        if (isLoading) return
+        isLoading = true
+
+        viewModelScope.launch {
+            val newPage = repository.getNextPage()
+            fullList.addAll(newPage)
+            _allData.postValue(fullList)
+            isLoading = false
+        }
+    }
+
+    fun resetAll() {
+        fullList.clear()
+        repository.resetPagination()
+        _allData.value = emptyList()
+    }
+
+    fun filterDataByType(type: String) {
+        val filtered = fullList.filter { it.rtype == type }
+        _filteredData.value = filtered
+    }
 
     private val _filteredData = MutableLiveData<List<UnifiedResidencyClass>>()
     val filteredData: LiveData<List<UnifiedResidencyClass>> get() = _filteredData
-
-    // Method to fetch all data from Firebase
-    fun fetchAllData() {
-        viewModelScope.launch {
-            val data = repository.getAllData()
-            _allData.value = data//Use .value => main thread OR Use .postValue() => background thread
-        }
-    }
-
-    // Method to filter data by type directly in ViewModel
-    fun filterDataByType(type: String) {
-        _allData.value?.let {
-            val filtered = it.filter { item ->
-                item.rtype == type
-            }
-            _filteredData.value = filtered
-        }
-    }
-
 }

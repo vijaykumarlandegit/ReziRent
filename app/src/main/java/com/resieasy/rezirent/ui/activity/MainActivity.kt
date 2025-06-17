@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(
             this
         ) { }
-
+  
         //val viewModel = ViewModelProvider(this)[MyViewModel::class.java]
         //val viewModel = ViewModelProvider(this).get(MyViewModel::class.java)
 

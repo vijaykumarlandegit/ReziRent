@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.resieasy.rezirent.ui.adapter.BothResiiAdapter
 import com.resieasy.rezirent.data.remote.firebase.BothResiClass
@@ -57,6 +58,17 @@ class BothResiiActivity : AppCompatActivity() {
 
         val querytype = intent.getStringExtra("topquery")
 
+        binding.bothrec.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = rv.layoutManager as LinearLayoutManager
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                val totalItemCount = layoutManager.itemCount
+
+                if (lastVisible >= totalItemCount - 5) {
+                    bothActivityViewModel.fetchNextPage()
+                }
+            }
+        })
 
         //All,Rent,Sell,Hostel
         if (querytype == "All") {
@@ -64,14 +76,14 @@ class BothResiiActivity : AppCompatActivity() {
             binding.bothshimmer.startShimmer()
             Toast.makeText(this, "All Residency", Toast.LENGTH_SHORT).show()
 
-            bothActivityViewModel.allData.observe(this@BothResiiActivity) { data ->
+            bothActivityViewModel.allData.observe(this) { data ->
                 if (!data.isNullOrEmpty()) {
                     adapter12.updateList(ArrayList(data))
-                    binding.bothshimmer.visibility = View.GONE
                     binding.bothshimmer.stopShimmer()
+                    binding.bothshimmer.visibility = View.GONE
                 }
             }
-            bothActivityViewModel.fetchAllData()
+
         }
 
         if (querytype == "Rent" || querytype == "Sell" || querytype == "Hostel") {
@@ -96,10 +108,15 @@ class BothResiiActivity : AppCompatActivity() {
             if (querytype == "All") {
                 bothActivityViewModel.allData.observe(this) { data ->
                     if (!data.isNullOrEmpty()) {
+                        bothActivityViewModel.resetAll()
+                        bothActivityViewModel.fetchNextPage()
                         adapter12.updateList(ArrayList(data))
+
+
+
                     }
                 }
-                bothActivityViewModel.fetchAllData()
+
             }
 
             if (querytype == "Rent" || querytype == "Sell" || querytype == "Hostel") {
