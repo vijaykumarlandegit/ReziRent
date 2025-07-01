@@ -12,41 +12,39 @@ import javax.inject.Singleton
 class BothActivityRepository @Inject constructor(
     private val firebaseFirestore: FirebaseFirestore
 ) {
-    private var lastVisible: DocumentSnapshot? = null
-    private var isLastPage = false
+    private var lastDocumentSnapshot: DocumentSnapshot? = null
+    private var isDataEnds = false
+    private val pageSize = 10
+    suspend fun getNextPage():List<UnifiedResidencyClass>{
 
-    suspend fun getNextPage(pageSize: Long = 20): List<UnifiedResidencyClass> {
-        if (isLastPage) return emptyList()
-
+        if (isDataEnds) return emptyList()
         return try {
-            val query = firebaseFirestore
+            val query=firebaseFirestore
                 .collection("Nanded")
                 .document("NandedCity")
                 .collection("AllData")
-                .whereEqualTo("status", "Active")
-                .orderBy("timestamp") // or any field for consistent ordering
+                .whereEqualTo("status","Active")
+                .orderBy("Timestamp")
                 .let {
-                    if (lastVisible != null) it.startAfter(lastVisible!!)
+                    if (lastDocumentSnapshot!=null) it.startAfter(lastDocumentSnapshot!!)
                     else it
                 }
-                .limit(pageSize)
+                .limit(pageSize.toLong())
                 .get()
                 .await()
 
-            if (query.isEmpty) {
-                isLastPage = true
+            if (query.isEmpty){
+                isDataEnds=true
                 return emptyList()
             }
-
-            lastVisible = query.documents.last()
+            lastDocumentSnapshot=query.documents.last()
             query.toObjects(UnifiedResidencyClass::class.java)
-        } catch (e: Exception) {
+        }catch (e:Exception){
             emptyList()
         }
     }
-
-    fun resetPagination() {
-        lastVisible = null
-        isLastPage = false
+    fun resetPagination(){
+        lastDocumentSnapshot=null
+        isDataEnds=false
     }
 }

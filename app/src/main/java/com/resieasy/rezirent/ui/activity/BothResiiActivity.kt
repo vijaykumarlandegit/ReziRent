@@ -58,17 +58,18 @@ class BothResiiActivity : AppCompatActivity() {
 
         val querytype = intent.getStringExtra("topquery")
 
-        binding.bothrec.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                val layoutManager = rv.layoutManager as LinearLayoutManager
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val totalItemCount = layoutManager.itemCount
-
-                if (lastVisible >= totalItemCount - 5) {
+        binding.bothrec.addOnScrollListener(object: RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager=recyclerView.layoutManager as LinearLayoutManager
+                val lastPosition=layoutManager.findLastVisibleItemPosition()
+                val totalItems=layoutManager.itemCount
+                if(lastPosition>=totalItems-5){
                     bothActivityViewModel.fetchNextPage()
                 }
             }
         })
+
+
 
         //All,Rent,Sell,Hostel
         if (querytype == "All") {
@@ -76,6 +77,7 @@ class BothResiiActivity : AppCompatActivity() {
             binding.bothshimmer.startShimmer()
             Toast.makeText(this, "All Residency", Toast.LENGTH_SHORT).show()
 
+            // 1. Observe first
             bothActivityViewModel.allData.observe(this) { data ->
                 if (!data.isNullOrEmpty()) {
                     adapter12.updateList(ArrayList(data))
@@ -83,6 +85,10 @@ class BothResiiActivity : AppCompatActivity() {
                     binding.bothshimmer.visibility = View.GONE
                 }
             }
+
+            // 2. Trigger fetch
+            bothActivityViewModel.fetchNextPage()
+
 
         }
 
@@ -106,16 +112,15 @@ class BothResiiActivity : AppCompatActivity() {
             Toast.makeText(this, "$querytype Refreshing", Toast.LENGTH_SHORT).show()
 
             if (querytype == "All") {
+                // Step 1: Observe once, at setup
                 bothActivityViewModel.allData.observe(this) { data ->
-                    if (!data.isNullOrEmpty()) {
-                        bothActivityViewModel.resetAll()
-                        bothActivityViewModel.fetchNextPage()
-                        adapter12.updateList(ArrayList(data))
-
-
-
-                    }
+                    adapter12.updateList(ArrayList(data))
                 }
+
+               // Step 2: Trigger logic as needed
+                bothActivityViewModel.resetAll()
+                bothActivityViewModel.fetchNextPage()
+
 
             }
 

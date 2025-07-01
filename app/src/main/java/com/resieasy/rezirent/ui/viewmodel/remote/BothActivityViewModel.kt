@@ -36,8 +36,9 @@ class BothActivityViewModel @Inject constructor(
 
     fun resetAll() {
         fullList.clear()
-        repository.resetPagination()
         _allData.value = emptyList()
+        repository.resetPagination()
+
     }
 
     fun filterDataByType(type: String) {

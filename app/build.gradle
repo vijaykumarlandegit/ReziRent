@@ -9,12 +9,12 @@ plugins {
 
 
 android {
-    namespace 'com.resieasy.rezirent'
-    compileSdk 34
-
     buildFeatures{
         viewBinding=true
     }
+
+    namespace 'com.resieasy.rezirent'
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.resieasy.rezirent"
@@ -35,9 +35,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
 }
 
 dependencies {
