@@ -19,7 +19,7 @@ class ShowSellViewModel @Inject constructor(private val repository : ShowSellRep
 
      fun getSellData(id:String){
          viewModelScope.launch {
-             _data.value = repository.fetchSingleSellData(id)
+             _data.postValue(repository.fetchSingleSellData(id))
          }
 
      }

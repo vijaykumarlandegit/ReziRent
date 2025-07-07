@@ -28,8 +28,10 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.PropertyName
+import com.google.firebase.ktx.Firebase
 
 import com.resieasy.rezirent.data.local.entity.HostelLocalClass
 import com.resieasy.rezirent.ui.viewmodel.local.HostelLocalViewmodel
@@ -85,9 +87,13 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(
             this
         ) { }
-  
+
         //val viewModel = ViewModelProvider(this)[MyViewModel::class.java]
         //val viewModel = ViewModelProvider(this).get(MyViewModel::class.java)
+
+        val firebaseAnalytics= Firebase.analytics
+
+
 
 
         val adRequest = AdRequest.Builder().build()
@@ -229,9 +235,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.profile.setOnClickListener {
+
+
             val intent = Intent(this@MainActivity, ProfileActivity::class.java)
             startActivity(intent)
         }
+
         binding.search12.setOnClickListener {
             val intent = Intent(this@MainActivity, BothResiiActivity::class.java)
             intent.putExtra("topquery", "All")
